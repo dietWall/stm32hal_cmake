@@ -1,0 +1,3 @@
+[submodule "stm32f7_hal"]
+	path = stm32f7_hal
+	url = https://github.com/STMicroelectronics/STM32CubeF7.git
