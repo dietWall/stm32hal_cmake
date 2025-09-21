@@ -12,8 +12,7 @@
             ]
         }
     },
-    "mounts": [
-        "source=${localWorkspaceFolder},target=/workspace,type=bind"
-    ],
-    "workspaceFolder": "/home/developer/workspace"
+    "workspaceFolder": "/home/developer/workspace",
+    "workspaceMount": "source=${localWorkspaceFolder},target=/home/developer/workspace,type=bind,consistency=bind"
+    
 }
