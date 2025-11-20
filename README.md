@@ -1,6 +1,6 @@
 # stm32hal_cmake
 This repo adds cmake files to the STM32F7XX_HAL Library in order to be able to create a static library with CMake and make. Additionally, it provides a devcontainer definition and an example Application based on the HAL Library.  
-The goal is to provide a simple build processintegration of a STM32 Application in a CI/CD pipeline and enable Hardware in the Loop Testing.
+The goal is to provide a simple build process integration of a STM32 Application in a CI/CD pipeline and enable Hardware in the Loop Testing for my hobby projects.
 
 The compilation process asumes the repository is opened within the image from https://github.com/dietWall/arm_none_eabi_dockerimage. Please follow the instructions provided in this repo first. Once the docker image is existing on your PC, you can progress with the setup described here.
 
