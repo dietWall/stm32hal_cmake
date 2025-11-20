@@ -21,6 +21,7 @@ add_library(STM32F7xx_HAL_Driver
     stm32f7_hal/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_pwr_ex.c
     stm32f7_hal/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_rcc.c
     stm32f7_hal/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_rcc_ex.c
+    stm32f7_hal/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_spi.c
     stm32f7_hal/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_tim.c
     stm32f7_hal/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_tim_ex.c
     stm32f7_hal/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_uart.c
@@ -28,7 +29,7 @@ add_library(STM32F7xx_HAL_Driver
     # Add or remove files as needed
 )
 target_link_libraries(STM32F7xx_HAL_Driver PUBLIC STM32F7xx_CMSIS_Device hal_config)
-target_include_directories(STM32F7xx_HAL_Driver PRIVATE
+target_include_directories(STM32F7xx_HAL_Driver PUBLIC
     stm32f7_hal/Drivers/STM32F7xx_HAL_Driver/Inc
 )
 
@@ -54,3 +55,15 @@ target_link_libraries(STM32F7xx_CMSIS_Device PUBLIC CMSISCore)
 set_target_properties(STM32F7xx_CMSIS_Device PROPERTIES
     OUTPUT_NAME "stm32f7xx_cmsis_device"
 )
+
+add_library(ST_BSP 
+    stm32f7_hal/Drivers/BSP/STM32F7xx_Nucleo_144/stm32f7xx_nucleo_144.c
+)
+target_include_directories(ST_BSP PUBLIC
+    stm32f7_hal/Drivers/BSP/STM32F7xx_Nucleo_144
+)
+target_link_libraries(ST_BSP 
+    PUBLIC STM32F7xx_HAL_Driver
+)
+
+add_subdirectory(Examples/UART_HyperTerminal_IT_767ZI)
