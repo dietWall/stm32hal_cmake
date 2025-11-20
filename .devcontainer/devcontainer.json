@@ -14,5 +14,4 @@
     },
     "workspaceFolder": "/home/developer/workspace",
     "workspaceMount": "source=${localWorkspaceFolder},target=/home/developer/workspace,type=bind,consistency=bind"
-    
 }
