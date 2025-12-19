@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
 project(STM32F7_HAL LANGUAGES CXX C ASM)
 
+#temporarily taken out, taking care of launch.json and debugging configuration
 # add_subdirectory(hal_config)
 
 # add_library(STM32F7xx_HAL_Driver
