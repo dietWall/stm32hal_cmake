@@ -9,6 +9,7 @@
         "stm32f7xx_hal_conf.h": "c"
     },
     "cmake.configureArgs": [
-        "-DCMAKE_TOOLCHAIN_FILE=/home/developer/toolchain/arm-none-eabi-gcc.cmake"
+        "-DCMAKE_TOOLCHAIN_FILE=/home/developer/toolchain/arm-none-eabi-gcc.cmake",
+        "-DCMAKE_BUILD_TYPE=Debug"
     ]
 }

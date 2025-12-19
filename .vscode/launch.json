@@ -1,0 +1,41 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            //this configuration works, but:
+            // 3 manual commands are required in vscode/debug console:
+            // -exec load                           #transfers executable to openocd/gdb server
+            // -exec print Reset_Handler            #prints the address of reset vector
+            // -exec set $pc=addr(Reset_Handler)    #manually replace addr(Reset_Handler) by the address printed in the last command
+            
+            // I need to find a way to run this commands automatically as part of the setup process and am currently working on that
+
+
+            //Nice to have: no hardcoded host ip! 
+            // instead a config value/environment variable/script, whatever fits better
+            //
+            "name": "docker_host|openocd:simple_main",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "/home/developer/workspace/build/Examples/simple_main/minimal_main.elf",
+            "args": [],
+            "stopAtEntry": true,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": true,
+            "MIMode": "gdb",
+            "miDebuggerPath": "/usr/bin/gdb-multiarch",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+            "miDebuggerServerAddress": "172.17.0.1:3333"
+        }
+    ]
+}
