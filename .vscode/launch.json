@@ -5,18 +5,6 @@
     "version": "0.2.0",
     "configurations": [
         {
-            //this configuration works, but:
-            // 3 manual commands are required in vscode/debug console:
-            // -exec load                           #transfers executable to openocd/gdb server
-            // -exec print Reset_Handler            #prints the address of reset vector
-            // -exec set $pc=addr(Reset_Handler)    #manually replace addr(Reset_Handler) by the address printed in the last command
-            
-            // I need to find a way to run this commands automatically as part of the setup process and am currently working on that
-
-
-            //Nice to have: no hardcoded host ip! 
-            // instead a config value/environment variable/script, whatever fits better
-            //
             "name": "docker_host|openocd:simple_main",
             "type": "cppdbg",
             "request": "launch",
@@ -25,17 +13,37 @@
             "stopAtEntry": true,
             "cwd": "${workspaceFolder}",
             "environment": [],
-            "externalConsole": true,
-            "MIMode": "gdb",
-            "miDebuggerPath": "/usr/bin/gdb-multiarch",
+            "externalConsole": false,
+            "MIMode": "gdb",                                //lldb|gdb specific protocol
+            "miDebuggerPath": "/usr/bin/gdb-multiarch",     //local debugger
+            "useExtendedRemote": true,                  //openocd complains every connection
+
+            "customLaunchSetupCommands": [
+                //danger: commands placed here replace all initialization done by vscode, 
+                // so if any are added, you have to figure out, how vscode connects
+            ],
+            "postRemoteConnectCommands": [
+                //commands to initialize after connection to the debugger
+                //{"text": "monitor reset halt"},         //halts the target and jumps to reset, for some reason we don´t need this
+                {"text": "load"}                        //transfers the executable and loads on the target
+
+            ],
             "setupCommands": [
                 {
+                    //default commands from vscode: executed probably before the connection setup
                     "description": "Enable pretty-printing for gdb",
                     "text": "-enable-pretty-printing",
                     "ignoreFailures": true
-                }
+                },
             ],
-            "miDebuggerServerAddress": "172.17.0.1:3333"
+            "miDebuggerServerAddress": "${input:openocd_hostname}:3333"        //openocd address, for me openocd is running directly on docker host
+        }
+    ],
+    "inputs": [
+        {
+            "id": "openocd_hostname",
+            "type": "promptString",
+            "description": "input for a hostname, where openocd is running"
         }
     ]
 }
