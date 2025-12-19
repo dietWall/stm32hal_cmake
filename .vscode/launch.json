@@ -1,0 +1,116 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Launch on localhost",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "/home/developer/workspace/build/Examples/UART_HyperTerminal_IT_767ZI/UART_HyperTerminal_IT.elf",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${fileDirname}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "Set Disassembly Flavor to Intel",
+                    "text": "-gdb-set disassembly-flavor intel",
+                    "ignoreFailures": true
+                }
+            ],
+            "miDebuggerServerAddress": "172.17.0.1:4242"
+        },
+        {
+            "name": "Launch on localhost_stmcubeide_test",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "/home/developer/workspace/stmcubeide_test.elf",
+            "args": [],
+            "stopAtEntry": true,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "miDebuggerPath": "/usr/bin/gdb-multiarch",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+            "miDebuggerServerAddress": "172.17.0.1:3333"
+        }
+        ,
+        {
+            "name": "Launch on localhost:minimal_main",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "/home/developer/workspace/build/Examples/simple_main/minimal_main.elf",
+            "args": [],
+            "stopAtEntry": true,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "miDebuggerPath": "/usr/bin/gdb-multiarch",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+                //,
+                // {
+                //     "description": "Set Disassembly Flavor to Intel",
+                //     "text": "-gdb-set disassembly-flavor intel",
+                //     "ignoreFailures": true
+                // }
+            ],
+            "miDebuggerServerAddress": "172.17.0.1:4242"
+        }
+        ,
+        {
+            "name": "Launch on localhost:minimal_main via openocd",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "/home/developer/workspace/build/Examples/simple_main/minimal_main.elf",
+            "args": [],
+            "stopAtEntry": true,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": true,
+            "MIMode": "gdb",
+            "miDebuggerPath": "/usr/bin/gdb-multiarch",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+                // ,
+                // {
+                //     "description": "Load Executable and jump to startup code",
+                //     "text": "exec load",
+                //     "ignoreFailures": false
+                // }
+                // ,
+                // {
+                //     "description": "reset and halt",
+                //     "text": "interpreter console monitor reset halt",
+                //     "ignoreFailures": false
+                // }
+            ],
+            "miDebuggerServerAddress": "172.17.0.1:3333"
+        }
+    ]
+}
