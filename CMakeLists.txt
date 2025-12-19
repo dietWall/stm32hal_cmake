@@ -57,7 +57,13 @@ set_target_properties(STM32F7xx_CMSIS_Device PROPERTIES
 
 
 target_compile_options(STM32F7xx_CMSIS_Device
-    PUBLIC "-ffunction-sections"
+# some of this settings are required for correct compilation of initialization code
+# I can´t tell yet, which of them are required and which are not
+# I guess -mcpu.. and -mfpu should be the same as in executable, 
+# otherwise mcu goes into HardFault because of illegal instruction
+# todo: reduce this instructions to a minimum, better: inherit this settings from executable cmake file
+# or maybe even better: provide this settings with MCU selection process
+PUBLIC "-ffunction-sections"
     PUBLIC "-fdata-sections"
     PUBLIC "-Wall"
     PUBLIC "-fstack-usage"
@@ -70,7 +76,16 @@ target_compile_options(STM32F7xx_CMSIS_Device
 
 
 target_link_options(STM32F7xx_CMSIS_Device
-    PUBLIC "-ffunction-sections"
+# some of this settings are required for correct selection of the newlib(-nano)
+# if they are not passed, the cpu enters Hardfault before calling main function (because ld links wrong libraries)
+
+# I can´t tell yet, which of them are required and which are not
+# I guess -mcpu.. and -mfpu should be the same as in executable, 
+# otherwise mcu goes into HardFault because of illegal instruction
+
+#todo: same as in compile_definitions: provide a mcu specific cmake file? / Inherit from executable
+
+PUBLIC "-ffunction-sections"
     PUBLIC "-fdata-sections"
     PUBLIC "-Wall"
     PUBLIC "-fstack-usage"
@@ -81,6 +96,7 @@ target_link_options(STM32F7xx_CMSIS_Device
     PUBLIC "-mcpu=cortex-m7"
 )
 
+#temporarily taken out, as long as taking care of debugging configuration
 # add_library(ST_BSP 
 #     stm32f7_hal/Drivers/BSP/STM32F7xx_Nucleo_144/stm32f7xx_nucleo_144.c
 # )
