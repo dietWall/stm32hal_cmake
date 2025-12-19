@@ -13,7 +13,6 @@
             
             // I need to find a way to run this commands automatically as part of the setup process and am currently working on that
 
-
             //Nice to have: no hardcoded host ip! 
             // instead a config value/environment variable/script, whatever fits better
             //
@@ -25,17 +24,30 @@
             "stopAtEntry": true,
             "cwd": "${workspaceFolder}",
             "environment": [],
-            "externalConsole": true,
-            "MIMode": "gdb",
-            "miDebuggerPath": "/usr/bin/gdb-multiarch",
+            "externalConsole": false,
+            "MIMode": "gdb",                                //lldb|gdb specific protocol
+            "miDebuggerPath": "/usr/bin/gdb-multiarch",     //local debugger
+            "useExtendedRemote": true,                  //openocd complains every connection
+
+            "customLaunchSetupCommands": [
+                //danger: commands placed here replace all initialization done by vscode, 
+                // so if any are added, you have to figure out, how vscode connects
+            ],
+            "postRemoteConnectCommands": [
+                //commands to initialize after connection to the debugger
+                //{"text": "monitor reset halt"},         //halts the target and jumps to reset, for some reason we don´t need this
+                {"text": "load"}                        //transfers the executable and loads on the target
+
+            ],
             "setupCommands": [
                 {
+                    //default commands from vscode: executed probably before the connection setup
                     "description": "Enable pretty-printing for gdb",
                     "text": "-enable-pretty-printing",
                     "ignoreFailures": true
-                }
+                },
             ],
-            "miDebuggerServerAddress": "172.17.0.1:3333"
+            "miDebuggerServerAddress": "172.17.0.1:3333"        //openocd address
         }
     ]
 }
