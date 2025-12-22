@@ -10,6 +10,7 @@ set(SOURCES
     stm32f7xx_it.c          #interrupt handlers
     stm32f7xx_hal_msp.c
     sysmem.c
+    board/systick_config.c
 )
 
 add_executable(${PROJECT_NAME} ${SOURCES})
@@ -17,6 +18,12 @@ add_executable(${PROJECT_NAME} ${SOURCES})
 target_link_libraries(${PROJECT_NAME} PRIVATE
     STM32F7xx_CMSIS_Device      #startup files
 )
+
+target_include_directories(${PROJECT_NAME}
+    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
+    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/board
+)
+
 
 target_link_options(${PROJECT_NAME}
     PUBLIC "-T/home/developer/workspace/Examples/simple_main/STM32F767ZITX_FLASH.ld"

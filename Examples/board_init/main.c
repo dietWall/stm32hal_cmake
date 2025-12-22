@@ -17,6 +17,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "systick_config.h"
 
 
 UART_HandleTypeDef huart3;
@@ -29,23 +30,39 @@ static void MX_GPIO_Init(void);
 static void MX_USART3_UART_Init(void);
 
 
+
+
 int main(void)
 {
   MPU_Config();
-  HAL_Init();
+  HAL_Init();               //this enables systick actually
   SystemClock_Config();
   MX_GPIO_Init();
   MX_USART3_UART_Init();
+  
+
+  systick_configuration systick_config = {
+    hclk_div8_clock,
+    12000
+  };
+
+  if(systick_setup(&systick_config) != 0)
+  {
+    while(1)
+    {
+      //do nothing
+    }
+  }
+  
 
 
   while (1)
   {
-    for(unsigned int delay = 0; delay < 1000000; delay++)
-    ;
+    
+    HAL_Delay(1000);
     HAL_GPIO_TogglePin(LD1_GPIO_Port, LD1_Pin);
     HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
     HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);
-    HAL_UART_Transmit(&huart3, (uint8_t *)"Welcome to STM32\n", 20, HAL_MAX_DELAY);
   }
 
 }
