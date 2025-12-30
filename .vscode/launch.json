@@ -38,6 +38,41 @@
             ],
             "miDebuggerServerAddress": "${input:openocd_hostname}:3333"        //openocd address, for me openocd is running directly on docker host
         }
+        ,
+        {
+            "name": "docker_host|openocd:basic_board_example",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "/home/developer/workspace/build/Examples/Board_Init/basic_board_example.elf",
+            "args": [],
+            "stopAtEntry": true,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",                                //lldb|gdb specific protocol
+            "miDebuggerPath": "/usr/bin/gdb-multiarch",     //local debugger
+            "useExtendedRemote": true,                  //openocd complains every connection
+
+            "customLaunchSetupCommands": [
+                //danger: commands placed here replace all initialization done by vscode, 
+                // so if any are added, you have to figure out, how vscode connects
+            ],
+            "postRemoteConnectCommands": [
+                //commands to initialize after connection to the debugger
+                {"text": "monitor reset halt"},         //halts the target and jumps to reset, for some reason we don´t need this
+                {"text": "load"}                        //transfers the executable and loads on the target
+
+            ],
+            "setupCommands": [
+                {
+                    //default commands from vscode: executed probably before the connection setup
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+            ],
+            "miDebuggerServerAddress": "${input:openocd_hostname}:3333"        //openocd address, for me openocd is running directly on docker host
+        }
     ],
     "inputs": [
         {
