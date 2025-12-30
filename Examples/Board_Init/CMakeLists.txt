@@ -30,7 +30,6 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
 
 target_link_options(${PROJECT_NAME}
     PUBLIC "-T/home/developer/workspace/Examples/simple_main/STM32F767ZITX_FLASH.ld"
-    PUBLIC "-T/home/developer/workspace/Examples/simple_main/STM32F767ZITX_RAM.ld"
     PUBLIC "-Wl,-Map=${PROJECT_NAME}.map"       #export map after linking, still required for debugging
 )
 
@@ -46,3 +45,4 @@ PUBLIC "-ffunction-sections"
     PUBLIC "-mfpu=fpv5-d16"
     PUBLIC "-mcpu=cortex-m7"
 )
+
