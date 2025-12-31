@@ -1,23 +1,32 @@
-cmake_minimum_required(VERSION 3.16)
-project(minimal_main LANGUAGES C CXX ASM)
+cmake_minimum_required(VERSION 3.25)
+project(basic_board_example LANGUAGES C CXX ASM)
 
 set(CMAKE_VERBOSE_MAKEFILE TRUE)
 
 # Collect all source files
 set(SOURCES
-    main.c
-    syscalls.c              #newlib-stuff
-    stm32f7xx_it.c          #interrupt handlers
+    Src/main.c
+    Src/stm32f7xx_hal_msp.c
+    Src/stm32f7xx_it.c
+    Src/syscalls.c              #newlib-stuff
+    Src/sysmem.c
+    Src/system_stm32f7xx.c
 )
 
 add_executable(${PROJECT_NAME} ${SOURCES})
 
+target_include_directories(${PROJECT_NAME}
+    PUBLIC Inc/
+)
+
 target_link_libraries(${PROJECT_NAME} PRIVATE
-    STM32F7xx_CMSIS_Device      #startup files
+    STM32F7xx_CMSIS_Device          #startup files
+    STM32F7xx_HAL_Driver            #HAL drivers
 )
 
 target_link_options(${PROJECT_NAME}
     PUBLIC "-T/home/developer/workspace/Examples/simple_main/STM32F767ZITX_FLASH.ld"
+    #PUBLIC "-x assembler-with-cpp" # // this is for the startup file
     PUBLIC "-Wl,-Map=${PROJECT_NAME}.map"       #export map after linking, still required for debugging
 )
 
@@ -32,4 +41,5 @@ PUBLIC "-ffunction-sections"
     PUBLIC "--specs=nano.specs"
     PUBLIC "-mfpu=fpv5-d16"
     PUBLIC "-mcpu=cortex-m7"
+    PUBLIC "-mfloat-abi=hard"
 )
