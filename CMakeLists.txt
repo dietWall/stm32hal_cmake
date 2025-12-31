@@ -104,6 +104,7 @@ target_link_libraries(STM32F7xx_HAL_Driver PUBLIC STM32F7xx_CMSIS_Device hal_con
 
 target_compile_definitions(STM32F7xx_HAL_Driver 
     PUBLIC USE_FULL_LL_DRIVER
+    PUBLIC USE_HAL_DRIVER
 )
 
 target_include_directories(STM32F7xx_HAL_Driver PUBLIC
@@ -148,6 +149,7 @@ PUBLIC "-ffunction-sections"
     PUBLIC "--specs=nano.specs"
     PUBLIC "-mfpu=fpv5-d16"
     PUBLIC "-mcpu=cortex-m7"
+    PUBLIC "-mfloat-abi=hard"
 )
 
 
@@ -170,6 +172,7 @@ PUBLIC "-ffunction-sections"
     PUBLIC "--specs=nano.specs"
     PUBLIC "-mfpu=fpv5-d16"
     PUBLIC "-mcpu=cortex-m7"
+    PUBLIC "-mfloat-abi=hard"
 )
 
 #temporarily taken out, as long as taking care of debugging configuration

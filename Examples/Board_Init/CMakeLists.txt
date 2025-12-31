@@ -5,16 +5,12 @@ set(CMAKE_VERBOSE_MAKEFILE TRUE)
 
 # Collect all source files
 set(SOURCES
-    Src/eth.c
-    Src/gpio.c
     Src/main.c
     Src/stm32f7xx_hal_msp.c
     Src/stm32f7xx_it.c
     Src/syscalls.c              #newlib-stuff
     Src/sysmem.c
     Src/system_stm32f7xx.c
-    Src/usart.c
-    Src/usb_otg.c
 )
 
 add_executable(${PROJECT_NAME} ${SOURCES})
@@ -30,6 +26,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
 
 target_link_options(${PROJECT_NAME}
     PUBLIC "-T/home/developer/workspace/Examples/simple_main/STM32F767ZITX_FLASH.ld"
+    #PUBLIC "-x assembler-with-cpp" # // this is for the startup file
     PUBLIC "-Wl,-Map=${PROJECT_NAME}.map"       #export map after linking, still required for debugging
 )
 
@@ -44,5 +41,5 @@ PUBLIC "-ffunction-sections"
     PUBLIC "--specs=nano.specs"
     PUBLIC "-mfpu=fpv5-d16"
     PUBLIC "-mcpu=cortex-m7"
+    PUBLIC "-mfloat-abi=hard"
 )
-
