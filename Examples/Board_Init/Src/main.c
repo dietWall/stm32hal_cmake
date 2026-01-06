@@ -87,6 +87,8 @@ static void MX_USB_OTG_FS_PCD_Init(void);
 
 /* USER CODE END 0 */
 
+volatile int delay = 500;
+
 /**
   * @brief  The application entry point.
   * @retval int
@@ -95,7 +97,7 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-
+  uint8_t msg[200];
   /* USER CODE END 1 */
 
   /* MPU Configuration--------------------------------------------------------*/
@@ -123,7 +125,8 @@ int main(void)
   MX_USART3_UART_Init();
   MX_USB_OTG_FS_PCD_Init();
   /* USER CODE BEGIN 2 */
-
+  snprintf((char *)msg, sizeof(msg), "Firmware initialized\r\n");
+  HAL_UART_Transmit(&huart3, msg, strlen((char *)msg), HAL_MAX_DELAY);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -132,14 +135,20 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-    uint8_t msg[200];
+    
     snprintf((char *)msg, sizeof(msg), "Hello %d from STM32F7! \r\n", counter++);
-    HAL_UART_Transmit(&huart3, msg, strlen((char *)msg), HAL_MAX_DELAY);
+    //tx_result should be not optimized out 
+    volatile HAL_StatusTypeDef tx_result = HAL_UART_Transmit(&huart3, msg, strlen((char *)msg), HAL_MAX_DELAY);
+    if (tx_result != HAL_OK)
+    {
+        HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);
+    }
+    
     HAL_GPIO_TogglePin(LD1_GPIO_Port, LD1_Pin);
     HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
-    HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);
 
-    HAL_Delay(1000);
+
+    HAL_Delay(delay);
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
