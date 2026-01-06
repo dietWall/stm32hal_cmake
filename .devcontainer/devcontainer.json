@@ -8,10 +8,14 @@
             },
             "extensions": [
                 "ms-vscode.cmake-tools",
-                "ms-vscode.cpptools-extension-pack"
+                "ms-vscode.cpptools-extension-pack",
+                "ms-python.python"
             ]
         }
     },
     "workspaceFolder": "/home/developer/workspace",
-    "workspaceMount": "source=${localWorkspaceFolder},target=/home/developer/workspace,type=bind,consistency=bind"
+    "workspaceMount": "source=${localWorkspaceFolder},target=/home/developer/workspace,type=bind,consistency=bind",
+    "postStartCommand" : "./tests/setup_test_env.sh"
+    //,
+    //"runArgs": ["--device=/dev/ttyACM0"]
 }
