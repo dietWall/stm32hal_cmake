@@ -18,6 +18,16 @@ def log_to_file(request):
 
 cmake_build_types = ["Debug", "Release", "RelWithDebInfo", "MinSizeRel"]
 
+@pytest.fixture(scope="module", params=cmake_build_types)
+def build_type(request):
+    return request.param
+
+binary_file_locations = {
+        "Debug": "/home/developer/workspace/tests/build/Debug/Examples/Board_Init/basic_board_example.elf",
+        "Release": "/home/developer/workspace/tests/build/Release/Examples/Board_Init/basic_board_example.elf",
+        "RelWithDebInfo": "/home/developer/workspace/tests/build/RelWithDebInfo/Examples/Board_Init/basic_board_example.elf",
+        "MinSizeRel": "/home/developer/workspace/tests/build/MinSizeRel/Examples/Board_Init/basic_board_example.elf"
+}
 
 def repo_root() -> str:
     git_result = subprocess.run(["git", "rev-parse", "--show-toplevel"],capture_output=True)
@@ -129,11 +139,36 @@ def compile(clean, log_to_file):
         print("##################################################")
     
     print("Build Time Summary:")
-
     for k, v in build_durations.items():
         print(f"duration for {k} : {v}")
 
     print("##################################################")
 
 
+@pytest.fixture(scope="module")
+def flash_binary_file(log_to_file, build_type):
+    file = binary_file_locations[build_type]
+    command = f"gdb-multiarch -f {file}"
+    this_directory = os.path.dirname(__file__)
 
+    log_file = None
+    if log_to_file == True:
+        log_file = f"{log_directory(build_type)}/gdb-multiarch.txt"
+
+    print(f"gdb command: {command}")
+    print(f"firmware: {file}")
+    print(f"cwd: {this_directory}")
+    print(f"logfile: {log_file}")
+    
+    log_file_desc = None
+    if log_file != None:
+        log_file_desc = open(log_file, "w")
+
+    result = subprocess.run(
+        command,
+        cwd=this_directory,
+        shell=True,
+        stdout=log_file_desc, stderr=log_file_desc
+    )
+    print(f"result from gdb: {result.returncode}")
+    return result.returncode
