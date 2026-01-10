@@ -36,7 +36,7 @@ def flash_gdb(firmware_path: str, log_file: str | None) -> int:
     ]
     )
 def test_echo(compile, binary_file, log_to_file, build_type):
-    print("")# newline
+    print("")           # newline
     print("###################################################") 
     gdb_log_file = None
 
@@ -55,8 +55,9 @@ def test_echo(compile, binary_file, log_to_file, build_type):
     ser.stopRxThread()
 
     with open(serial_logfile, "r") as f:
-        for l in f.readlines(-1):
-            print(l)
+        uart_output = f.readlines()
+        for l in uart_output:
+            print(f"analyzing: {l.strip()}")
             if l.strip() == "hello from pytest":
                 print("echo successful")
     print("###################################################") 

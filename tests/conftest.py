@@ -38,7 +38,7 @@ def clean_directory() -> int:
     
 
 def log_directory(build_type: str) -> str:
-    log_dir = f"{repo_root()}/tests/log/{build_type}/"
+    log_dir = f"{repo_root()}/tests/log/{build_type}"
     #make sure it exists
     subprocess.run([f"mkdir -p {log_dir}"], shell=True)
     return log_dir

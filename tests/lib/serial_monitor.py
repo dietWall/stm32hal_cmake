@@ -31,6 +31,7 @@ class SerialReaderWriter:
                 print(f"{self.device} >>> {data}")
                 if self.logdescr != None:
                     self.logdescr.write(f"{data}\n")
+                    self.logdescr.flush()
         
         self.synchronized_print("rx_thread: exiting")
 
