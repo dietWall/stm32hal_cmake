@@ -11,5 +11,12 @@
     "cmake.configureArgs": [
         "-DCMAKE_TOOLCHAIN_FILE=/home/developer/toolchain/arm-none-eabi-gcc.cmake",
         "-DCMAKE_BUILD_TYPE=Debug"
-    ]
+    ],
+    "python.testing.pytestArgs": [
+        "tests",
+        "-s",
+        "-v"
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true
 }
