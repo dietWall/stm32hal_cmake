@@ -88,6 +88,67 @@ static void MX_USB_OTG_FS_PCD_Init(void);
 /* USER CODE END 0 */
 
 volatile int delay = 500;
+volatile uint8_t rx_finished = 0;
+uint8_t rx_buffer[200];
+volatile uint8_t rx_index = 0;
+uint8_t tmp_buffer = 0;
+
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *UartHandle)
+{
+  if(rx_buffer[rx_index] == '\n')
+  {
+    //set finished
+    rx_finished = 1;
+  }
+  else
+  {
+    if(rx_finished == 1)
+    {
+      //error: not processed yet
+    }
+    else
+    {
+      rx_index++;
+      if(rx_index >= sizeof(rx_buffer))
+      {
+        //error!
+      }
+        HAL_StatusTypeDef rx_result = HAL_UART_Receive_IT(&huart3, rx_buffer + rx_index, 1);
+        if(rx_result != HAL_OK)
+        {
+          //error
+        }
+    }
+    
+  }
+}
+
+
+int checkUartRx()
+{ 
+  if(rx_finished == 1)
+  {
+    //echo
+    uint8_t msg[200];
+    size_t len = snprintf((char*)msg, sizeof(msg), "%s", rx_buffer);
+    HAL_StatusTypeDef tx_result = HAL_UART_Transmit(&huart3, msg, len, HAL_MAX_DELAY);
+    if (tx_result != HAL_OK)
+    {
+        HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);
+    }
+
+    rx_index=0;
+    memset((void*)rx_buffer, 0, sizeof(rx_buffer));
+    rx_finished=0;
+    
+    HAL_StatusTypeDef rx_result = HAL_UART_Receive_IT(&huart3, rx_buffer, 1);
+    if(rx_result != HAL_OK)
+    {
+      //error
+    }
+  }
+  return 0;
+}
 
 /**
   * @brief  The application entry point.
@@ -124,30 +185,33 @@ int main(void)
   MX_ETH_Init();
   MX_USART3_UART_Init();
   MX_USB_OTG_FS_PCD_Init();
+
+
+  //start first reception
+  HAL_StatusTypeDef rx_result = HAL_UART_Receive_IT(&huart3, rx_buffer, 1);
+  if(rx_result != HAL_OK)
+  {
+    //error
+  }
+  HAL_NVIC_EnableIRQ(USART3_IRQn);
+
   /* USER CODE BEGIN 2 */
   snprintf((char *)msg, sizeof(msg), "Firmware initialized\r\n");
   HAL_UART_Transmit(&huart3, msg, strlen((char *)msg), HAL_MAX_DELAY);
+  
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  int counter = 0;
+  //int counter = 0;
   while (1)
   {
     /* USER CODE END WHILE */
+    checkUartRx();
     
-    snprintf((char *)msg, sizeof(msg), "Hello %d from STM32F7! \r\n", counter++);
-    //tx_result should be not optimized out 
-    volatile HAL_StatusTypeDef tx_result = HAL_UART_Transmit(&huart3, msg, strlen((char *)msg), HAL_MAX_DELAY);
-    if (tx_result != HAL_OK)
-    {
-        HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);
-    }
-    
+
     HAL_GPIO_TogglePin(LD1_GPIO_Port, LD1_Pin);
     HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
-
-
     HAL_Delay(delay);
     /* USER CODE BEGIN 3 */
   }

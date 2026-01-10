@@ -78,6 +78,12 @@ void NMI_Handler(void)
   /* USER CODE END NonMaskableInt_IRQn 1 */
 }
 
+void USART3_IRQHandler(void)
+{
+  extern UART_HandleTypeDef huart3;
+  HAL_UART_IRQHandler(&huart3);
+}
+
 /**
   * @brief This function handles Hard fault interrupt.
   */
