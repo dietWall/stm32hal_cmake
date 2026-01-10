@@ -7,13 +7,17 @@ import time
 import serial
 
 class SerialReaderWriter:
-    def __init__(self, device: str = "/dev/ttyACM0", baudrate: int = 115200) -> None:
+    def __init__(self, device: str = "/dev/ttyACM0", baudrate: int = 115200, logfile: str | None = None) -> None:
         self.device = device
         self.baudrate = baudrate
         self.serial = serial.Serial(device, baudrate, timeout=1)
         self.rx_shutdown_flag = threading.Event()
         self.rx_thr = threading.Thread()
         self.output_lock = threading.Lock()
+        if logfile != None:
+            self.logdescr = open(logfile, "w")
+        else:
+            self.logdescr = None            #capture python warnings, in case logfile = None
     
     def synchronized_print(self, message: str):
         with self.output_lock:
@@ -24,13 +28,11 @@ class SerialReaderWriter:
         while not self.rx_shutdown_flag.is_set():
             data = self.serial.readline().decode('utf-8', errors="ignore").strip()
             if len(data) > 0:
-                with open("logfile.txt", "w+") as f:
-                    f.writelines(data)
-                f.close()
-
-            if len(data) > 0:
                 print(f"{self.device} >>> {data}")
-        self.synchronized_print("stopping rx_thread")
+                if self.logdescr != None:
+                    self.logdescr.write(f"{data}\n")
+        
+        self.synchronized_print("rx_thread: exiting")
 
     def createRxThread(self):
         self.synchronized_print(f"creating rx_trhead")
@@ -38,8 +40,8 @@ class SerialReaderWriter:
         self.rx_thr.start()
 
     def stopRxThread(self):
+        self.synchronized_print(f"stopping rx_thread")
         self.rx_shutdown_flag.set()
-        
         if self.rx_thr.is_alive():
             self.rx_thr.join()
 

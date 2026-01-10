@@ -15,7 +15,8 @@
     "python.testing.pytestArgs": [
         "tests",
         "-s",
-        "-v"
+        "-v",
+        "--log_to_file"
     ],
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true

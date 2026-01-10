@@ -5,36 +5,56 @@ import time
 
 from lib.serial_monitor import SerialReaderWriter
 
-def flash_gdb(firmware_path):
+def flash_gdb(firmware_path: str, log_file: str | None) -> int:
     command = f"gdb-multiarch -f {firmware_path}"
     this_directory = os.path.dirname(__file__)
-    print(f"flashing {firmware_path} with cwd as: {this_directory} using gdb-multiarch")
+
+    print(f"gdb command: {command}")
+    print(f"firmware: {firmware_path}")
+    print(f"cwd: {this_directory}")
+    
+    log_file_desc = None
+    if log_file != None:
+        log_file_desc = open(log_file, "w")
+
     result = subprocess.run(
         command,
         cwd=this_directory,
-        shell=True
+        shell=True,
+        stdout=log_file_desc, stderr=log_file_desc
     )
     print(f"result from gdb: {result.returncode}")
+    return result.returncode
 
 
-@pytest.mark.parametrize("binary_file", 
-    [
-        "/home/developer/workspace/tests/build/Debug/Examples/Board_Init/basic_board_example.elf",
-        "/home/developer/workspace/tests/build/Release/Examples/Board_Init/basic_board_example.elf",
-        "/home/developer/workspace/tests/build/RelWithDebInfo/Examples/Board_Init/basic_board_example.elf",
-        "/home/developer/workspace/tests/build/MinSizeRel/Examples/Board_Init/basic_board_example.elf",
-    ])
-def test_echo(compile, binary_file):
-    ser = SerialReaderWriter()
+@pytest.mark.parametrize("binary_file,build_type", [
+        ("/home/developer/workspace/tests/build/Debug/Examples/Board_Init/basic_board_example.elf", "Debug"),
+        ("/home/developer/workspace/tests/build/Release/Examples/Board_Init/basic_board_example.elf", "Release"),
+        ("/home/developer/workspace/tests/build/RelWithDebInfo/Examples/Board_Init/basic_board_example.elf", "RelWithDebInfo"),
+        ("/home/developer/workspace/tests/build/MinSizeRel/Examples/Board_Init/basic_board_example.elf", "MinSizeRel")
+    ]
+    )
+def test_echo(compile, binary_file, log_to_file, build_type):
+    print("") # newline
+    gdb_log_file = None
+
+    if log_to_file == True:
+        from conftest import log_directory
+        gdb_log_file = f"{log_directory(build_type)}/gdb-multiarch.txt"
+
+    serial_logfile = f"{log_directory(build_type)}/uart_log.txt"    # serial logfile has always to be used for asserts
+
+    ser = SerialReaderWriter(logfile=serial_logfile)
     ser.createRxThread()
-    flash_gdb(binary_file)
+    
+    flash_gdb(binary_file, gdb_log_file)
     
     time.sleep(1)
     ser.serial.write("hello from pytest\n".encode("utf-8"))
-    time.sleep(5)
+    time.sleep(1)
     ser.stopRxThread()
 
-    with open("logfile.txt", "r") as f:
+    with open(serial_logfile, "r") as f:
         for l in f.readlines(-1):
             print(l)
             if l.strip() == "hello from pytest":
