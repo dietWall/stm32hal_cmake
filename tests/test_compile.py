@@ -12,6 +12,7 @@ def flash_gdb(firmware_path: str, log_file: str | None) -> int:
     print(f"gdb command: {command}")
     print(f"firmware: {firmware_path}")
     print(f"cwd: {this_directory}")
+    print(f"logfile: {log_file}")
     
     log_file_desc = None
     if log_file != None:
@@ -35,23 +36,22 @@ def flash_gdb(firmware_path: str, log_file: str | None) -> int:
     ]
     )
 def test_echo(compile, binary_file, log_to_file, build_type):
-    print("") # newline
+    print("")# newline
+    print("###################################################") 
     gdb_log_file = None
 
     if log_to_file == True:
         from conftest import log_directory
         gdb_log_file = f"{log_directory(build_type)}/gdb-multiarch.txt"
-
-    serial_logfile = f"{log_directory(build_type)}/uart_log.txt"    # serial logfile has always to be used for asserts
+    # serial logfile has always to be used for asserts
+    serial_logfile = f"{log_directory(build_type)}/uart_log.txt"
 
     ser = SerialReaderWriter(logfile=serial_logfile)
     ser.createRxThread()
-    
     flash_gdb(binary_file, gdb_log_file)
-    
-    time.sleep(1)
+    time.sleep(1)   #let firmware initialize
     ser.serial.write("hello from pytest\n".encode("utf-8"))
-    time.sleep(1)
+    time.sleep(1)   # let device response
     ser.stopRxThread()
 
     with open(serial_logfile, "r") as f:
@@ -59,4 +59,5 @@ def test_echo(compile, binary_file, log_to_file, build_type):
             print(l)
             if l.strip() == "hello from pytest":
                 print("echo successful")
+    print("###################################################") 
     
