@@ -10,11 +10,7 @@ class Test_Uart:
     def test_echo(self, compile,flash_binary_file,log_to_file, build_type):
         print("")           # newline
         print("###################################################") 
-        gdb_log_file = None
-
-        if log_to_file == True:
-            from conftest import log_directory
-            gdb_log_file = f"{log_directory(build_type)}/gdb-multiarch.txt"
+        from conftest import log_directory
         # serial logfile has always to be used for asserts
         serial_logfile = f"{log_directory(build_type)}/uart_log.txt"
 
@@ -32,9 +28,4 @@ class Test_Uart:
                 if l.strip() == "hello from pytest":
                     print("echo successful")
         print("###################################################") 
-    
-    def test_2(self, build_type):
-        print(build_type)
 
-    def test_3(self, build_type):
-        print(build_type)
