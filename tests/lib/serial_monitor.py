@@ -3,19 +3,27 @@
 import serial
 import sys
 import threading
-import time
+import datetime
 import serial
+import os
 
 class SerialReaderWriter:
-    def __init__(self, device: str = "/dev/ttyACM0", baudrate: int = 115200, logfile: str | None = None) -> None:
+    def __init__(self, device: str = "/dev/ttyACM0", 
+                 baudrate: int = 115200, 
+                 logfile: str | None = None, 
+                 eol_symbol: str|None = "\r\n") -> None:
+        
         self.device = device
         self.baudrate = baudrate
         self.serial = serial.Serial(device, baudrate, timeout=1)
         self.rx_shutdown_flag = threading.Event()
         self.rx_thr = threading.Thread()
         self.output_lock = threading.Lock()
+        self.eol_symbol = eol_symbol
+
         if logfile != None:
-            self.logdescr = open(logfile, "w")
+            self.logdescr = open(logfile, "w")  # open logfile and safe descriptor
+            self.logdescr.write(f"Session with {device}:{baudrate} starts at {datetime.datetime.now()}{os.linesep}")
         else:
             self.logdescr = None            #capture python warnings, in case logfile = None
     
@@ -49,6 +57,21 @@ class SerialReaderWriter:
     def disconnect(self):
         self.serial.close()
     
+    def send_message(self, msg: str):
+        if self.eol_symbol != None:
+            self.serial.write(f"{msg}{self.eol_symbol}".encode("utf-8"))
+        else:
+            self.serial.write(f"{msg}".encode("utf-8"))
+        if self.logdescr != None:
+            self.logdescr.write(f">>> {msg}\n")
+
+
+    def receive_message(self) -> str:
+        data = self.serial.readline().decode('utf-8', errors="ignore").strip()
+        if self.logdescr != None:
+            self.logdescr.write(f"<<< {data}\n")
+        return data
+
 
 def main(device: str = "/dev/ttyACM0", baudrate: int = 115200):
     TIMEOUT = 1
