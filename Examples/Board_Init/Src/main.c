@@ -102,34 +102,51 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *UartHandle)
   }
   else
   {
-    if(rx_finished == 1)
+    if(rx_finished == 1 || rx_finished == 2)
     {
       //error: not processed yet
+      //read again, write to idx = 0
+      HAL_StatusTypeDef rx_result = HAL_UART_Receive_IT(&huart3, rx_buffer, 1);
+      if(rx_result != HAL_OK)
+      {
+      //error
+      }
     }
     else
     {
       rx_index++;
       if(rx_index >= sizeof(rx_buffer))
       {
-        //error!
+        //error: reset buffer,
+        rx_finished = 2;
+        //read again, write to idx = 0
+        HAL_StatusTypeDef rx_result = HAL_UART_Receive_IT(&huart3, rx_buffer, 1);
+        if(rx_result != HAL_OK)
+        {
+        //error
+        }
       }
+      else
+      {
         HAL_StatusTypeDef rx_result = HAL_UART_Receive_IT(&huart3, rx_buffer + rx_index, 1);
         if(rx_result != HAL_OK)
         {
-          //error
+        //error
         }
+      }  
     }
-    
   }
 }
 
 
 int checkUartRx()
 { 
+  uint8_t msg[200];
+
   if(rx_finished == 1)
   {
     //echo
-    uint8_t msg[200];
+    
     size_t len = snprintf((char*)msg, sizeof(msg), "%s", rx_buffer);
     HAL_StatusTypeDef tx_result = HAL_UART_Transmit(&huart3, msg, len, HAL_MAX_DELAY);
     if (tx_result != HAL_OK)
@@ -145,6 +162,26 @@ int checkUartRx()
     if(rx_result != HAL_OK)
     {
       //error
+    }
+  }
+  else if(rx_finished == 2)
+  {
+    //error: reset buffer
+    size_t len = snprintf((char*)msg, sizeof(msg), "Error: Buffer overflow, MAX %d characters, resetting buffer", sizeof(rx_buffer));
+    HAL_StatusTypeDef tx_result = HAL_UART_Transmit(&huart3, msg, len, HAL_MAX_DELAY);
+    if (tx_result != HAL_OK)
+    {
+        HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);
+    }
+    
+    rx_index=0;
+    memset((void*)rx_buffer, 0, sizeof(rx_buffer));
+    rx_finished=0;
+    HAL_StatusTypeDef rx_result = HAL_UART_Receive_IT(&huart3, rx_buffer, 1);
+    HAL_NVIC_EnableIRQ(USART3_IRQn);
+    if(rx_result != HAL_OK)
+    {
+      HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);
     }
   }
   return 0;
@@ -203,7 +240,6 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  //int counter = 0;
   while (1)
   {
     /* USER CODE END WHILE */
