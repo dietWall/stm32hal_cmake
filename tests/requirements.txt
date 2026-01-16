@@ -1,0 +1,3 @@
+pytest
+pyserial
+mapfile_parser

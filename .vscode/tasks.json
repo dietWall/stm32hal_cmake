@@ -11,6 +11,15 @@
 			"group": "build",
 			"problemMatcher": [],
 			"detail": "CMake template build task"
+		},
+		{
+			"type": "shell",
+			"label": "Start Serial Monitor",
+			"command": [
+				"source", "/home/developer/workspace/.venv/bin/activate", "&&",
+				"/home/developer/workspace/tests/lib/serial_monitor.py"
+			],
+			"problemMatcher": []
 		}
 	]
 }
