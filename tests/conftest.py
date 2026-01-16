@@ -45,14 +45,12 @@ def clean_directory() -> int:
     except FileNotFoundError as ex:
         print(f"build dir was not there: {ex}")
         return -1
-    
 
 def log_directory(build_type: str) -> str:
     log_dir = f"{repo_root()}/tests/log/{build_type}"
     #make sure it exists
     subprocess.run([f"mkdir -p {log_dir}"], shell=True)
     return log_dir
-
 
 def create_build_dir() -> str:
     build_dir = f"{repo_root()}/tests/build"
@@ -78,7 +76,6 @@ def cmake_run(cmake_root_dir: str, build_dir: str, build_type: str, cmake_log_fi
        )
     print(f"cmake result for {build_type}: {result.returncode}")
     return result.returncode
-
 
 def make_run(build_type_directory: str, make_log_file: str|None) -> int:
     logfile = None
@@ -144,6 +141,16 @@ def compile(clean, log_to_file):
 
     print("##################################################")
 
+def openocd_controller(firmware_file, map_file, host):
+    from tcl_utils.tcl_control import OpenOCD_TCL
+    tcl = OpenOCD_TCL(host="dw-latitude-e6440", 
+                    verbose=False, 
+                    elf_file=firmware_file, 
+                    mapfile=map_file, 
+                    svd_dir=os.path.join(repo_root(), "svd")
+    )
+    tcl.connect()
+    return tcl
 
 @pytest.fixture(scope="module")
 def flash_binary_file(log_to_file, build_type):
@@ -159,7 +166,7 @@ def flash_binary_file(log_to_file, build_type):
     print(f"firmware: {file}")
     print(f"cwd: {this_directory}")
     print(f"logfile: {log_file}")
-    
+
     log_file_desc = None
     if log_file != None:
         log_file_desc = open(log_file, "w")

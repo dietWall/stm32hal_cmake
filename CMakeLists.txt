@@ -107,8 +107,11 @@ target_compile_definitions(STM32F7xx_HAL_Driver
     PUBLIC USE_HAL_DRIVER
 )
 
-target_include_directories(STM32F7xx_HAL_Driver PUBLIC
+target_include_directories(STM32F7xx_HAL_Driver 
+PUBLIC
     stm32f7_hal/Drivers/STM32F7xx_HAL_Driver/Inc
+    #"$<BUILD_INTERFACE:stm32f7_hal/Drivers/STM32F7xx_HAL_Driver/Inc>"
+    #"$<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/stm32f7_hal/Drivers/STM32F7xx_HAL_Driver/Inc>"
 )
 
 
@@ -186,4 +189,10 @@ PUBLIC "-ffunction-sections"
 #     PUBLIC STM32F7xx_HAL_Driver
 # )
 
-add_subdirectory(Examples)
+# Optionally, install the header files and the target
+#install(DIRECTORY STM32F7xx_HAL_Driver/ DESTINATION include)
+#install(TARGETS STM32F7xx_HAL_Driver EXPORT hal_configTargets)
+install()
+
+#add_subdirectory(Examples)
+

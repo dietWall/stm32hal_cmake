@@ -16,7 +16,8 @@
         "tests",
         "-s",
         "-v",
-        "--log_to_file"
+        "--log_to_file",
+        "--clean"
     ],
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true

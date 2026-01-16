@@ -3,4 +3,3 @@ build*
 __pycache__
 .pytest_cache
 tests/log*
-tcl_control.py
