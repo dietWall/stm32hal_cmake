@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
 project(STM32F7_HAL LANGUAGES CXX C ASM)
 
-#temporarily taken out, taking care of launch.json and debugging configuration
+
 add_subdirectory(hal_config)
 
 add_library(STM32F7xx_HAL_Driver
@@ -110,8 +110,6 @@ target_compile_definitions(STM32F7xx_HAL_Driver
 target_include_directories(STM32F7xx_HAL_Driver 
 PUBLIC
     stm32f7_hal/Drivers/STM32F7xx_HAL_Driver/Inc
-    #"$<BUILD_INTERFACE:stm32f7_hal/Drivers/STM32F7xx_HAL_Driver/Inc>"
-    #"$<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/stm32f7_hal/Drivers/STM32F7xx_HAL_Driver/Inc>"
 )
 
 
@@ -178,21 +176,6 @@ PUBLIC "-ffunction-sections"
     PUBLIC "-mfloat-abi=hard"
 )
 
-#temporarily taken out, as long as taking care of debugging configuration
-# add_library(ST_BSP 
-#     stm32f7_hal/Drivers/BSP/STM32F7xx_Nucleo_144/stm32f7xx_nucleo_144.c
-# )
-# target_include_directories(ST_BSP PUBLIC
-#     stm32f7_hal/Drivers/BSP/STM32F7xx_Nucleo_144
-# )
-# target_link_libraries(ST_BSP 
-#     PUBLIC STM32F7xx_HAL_Driver
-# )
 
-# Optionally, install the header files and the target
-#install(DIRECTORY STM32F7xx_HAL_Driver/ DESTINATION include)
-#install(TARGETS STM32F7xx_HAL_Driver EXPORT hal_configTargets)
-install()
-
-#add_subdirectory(Examples)
+add_subdirectory(Examples)
 
