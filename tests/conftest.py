@@ -3,9 +3,12 @@ import subprocess
 import os
 import datetime
 
+from tcl_utils.serial_monitor import SerialReaderWriter
+
 def pytest_addoption(parser):
     parser.addoption("--clean", action="store_true", default=False, help="creates a clean cmake build for the tests")
     parser.addoption("--log_to_file", action="store_true", default=False, help="writes build and gdb logs to files to: <repo_root>/tests/log/<build_type>/")
+    parser.addoption("--host", help="defines the hostname to execute the tests", default = "dw-latitude-e6440")
 
 @pytest.fixture(scope="session")
 def clean(request):
@@ -15,6 +18,9 @@ def clean(request):
 def log_to_file(request):
     return request.config.getoption("--log_to_file")
 
+@pytest.fixture(scope="session")
+def host(request):
+    return request.config.getoption("--host")
 
 cmake_build_types = ["Debug", "Release", "RelWithDebInfo", "MinSizeRel"]
 
@@ -23,21 +29,45 @@ def build_type(request):
     return request.param
 
 binary_file_locations = {
-        "Debug": "/home/developer/workspace/tests/build/Debug/Examples/Board_Init/basic_board_example.elf",
-        "Release": "/home/developer/workspace/tests/build/Release/Examples/Board_Init/basic_board_example.elf",
-        "RelWithDebInfo": "/home/developer/workspace/tests/build/RelWithDebInfo/Examples/Board_Init/basic_board_example.elf",
-        "MinSizeRel": "/home/developer/workspace/tests/build/MinSizeRel/Examples/Board_Init/basic_board_example.elf"
+    "Debug": {
+        "firmware" : "/home/developer/workspace/tests/build/Debug/Examples/Board_Init/basic_board_example.elf", 
+        "map" : "/home/developer/workspace/tests/build/Debug/Examples/Board_Init/basic_board_example.map" 
+        },
+    "Release": {
+        "firmware" : "/home/developer/workspace/tests/build/Release/Examples/Board_Init/basic_board_example.elf", 
+        "map" : "/home/developer/workspace/tests/build/Release/Examples/Board_Init/basic_board_example.map" 
+        },
+    "RelWithDebInfo": {
+        "firmware" : "/home/developer/workspace/tests/build/RelWithDebInfo/Examples/Board_Init/basic_board_example.elf", 
+        "map" : "/home/developer/workspace/tests/build/RelWithDebInfo/Examples/Board_Init/basic_board_example.map" 
+        },
+    "MinSizeRel": {
+        "firmware" : "/home/developer/workspace/tests/build/MinSizeRel/Examples/Board_Init/basic_board_example.elf", 
+        "map" : "/home/developer/workspace/tests/build/MinSizeRel/Examples/Board_Init/basic_board_example.map" 
+    }
 }
+
+@pytest.fixture(scope="module")
+def firmware(build_type):
+    binary_file = binary_file_locations[build_type]["firmware"]
+    return binary_file
+
+@pytest.fixture(scope="module")
+def mapfile(build_type):
+    map_file = binary_file_locations[build_type]["map"]
+    return map_file
 
 def repo_root() -> str:
     git_result = subprocess.run(["git", "rev-parse", "--show-toplevel"],capture_output=True)
     repo_root = git_result.stdout.strip().decode("utf-8")
     return repo_root
 
-
-def clean_directory() -> int:
+@pytest.fixture
+def build_dir(build_type):
     build_dir = f"{repo_root()}/tests/build"
     print(f"creating build in {build_dir}")
+
+def clean_directory(build_dir) -> int:
     try: 
         result = subprocess.run([f"rm -rf {build_dir}"], shell=True)
         return result.returncode
@@ -46,7 +76,7 @@ def clean_directory() -> int:
         print(f"build dir was not there: {ex}")
         return -1
 
-def log_directory(build_type: str) -> str:
+def log_directory(build_type: str):
     log_dir = f"{repo_root()}/tests/log/{build_type}"
     #make sure it exists
     subprocess.run([f"mkdir -p {log_dir}"], shell=True)
@@ -87,17 +117,16 @@ def make_run(build_type_directory: str, make_log_file: str|None) -> int:
     print(f"make result for {build_type_directory}: {result.returncode}")
     return result.returncode
 
-
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="session", autouse=True)
 def compile(clean, log_to_file):
     print("")
     print(f"compile: {repo_root()}")
 
-    if clean:
-        clean_directory()
-    
     build_dir = create_build_dir()
-
+    
+    if clean:
+        clean_directory(build_dir)
+    
     if build_dir == "":
         print("could not create root build directory")
         pytest.exit()
@@ -141,36 +170,36 @@ def compile(clean, log_to_file):
 
     print("##################################################")
 
-def openocd_controller(firmware_file, map_file, host):
+@pytest.fixture()
+def openocd_controller(firmware, mapfile, host):
     from tcl_utils.tcl_control import OpenOCD_TCL
-    tcl = OpenOCD_TCL(host="dw-latitude-e6440", 
+    tcl = OpenOCD_TCL(host=host, 
                     verbose=False, 
-                    elf_file=firmware_file, 
-                    mapfile=map_file, 
+                    elf_file=firmware, 
+                    mapfile=mapfile, 
                     svd_dir=os.path.join(repo_root(), "svd")
     )
     tcl.connect()
-    return tcl
+    yield tcl
 
-@pytest.fixture(scope="module")
-def flash_binary_file(log_to_file, build_type):
-    file = binary_file_locations[build_type]
-    command = f"gdb-multiarch -f {file}"
+    return
+
+@pytest.fixture(scope="module", autouse=True)
+def flash_binary_file(log_to_file, build_type, firmware):
+    command = f"gdb-multiarch -f {firmware}"
     this_directory = os.path.dirname(__file__)
-
     log_file = None
     if log_to_file == True:
         log_file = f"{log_directory(build_type)}/gdb-multiarch.txt"
 
     print(f"gdb command: {command}")
-    print(f"firmware: {file}")
+    print(f"firmware: {firmware}")
     print(f"cwd: {this_directory}")
     print(f"logfile: {log_file}")
 
     log_file_desc = None
     if log_file != None:
         log_file_desc = open(log_file, "w")
-
     result = subprocess.run(
         command,
         cwd=this_directory,
@@ -179,3 +208,10 @@ def flash_binary_file(log_to_file, build_type):
     )
     print(f"result from gdb: {result.returncode}")
     return result.returncode
+
+@pytest.fixture()
+def serial_interface(build_type):
+    serial_logfile = f"{log_directory(build_type)}/uart_log.txt"
+    ser = SerialReaderWriter(logfile=serial_logfile, device="/home/developer/workspace/tty1")
+    yield ser
+    return
