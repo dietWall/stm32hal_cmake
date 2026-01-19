@@ -93,6 +93,10 @@ uint8_t rx_buffer[200];
 volatile uint8_t rx_index = 0;
 uint8_t tmp_buffer = 0;
 
+
+volatile int echo = 1;
+volatile int tx_hello = 0;
+
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *UartHandle)
 {
   if(rx_buffer[rx_index] == '\n')
@@ -139,6 +143,36 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *UartHandle)
 }
 
 
+void process_message(uint8_t* msg)
+{
+  if(strncmp((char*)msg, "echo", 4)  == 0)
+  {
+    uint8_t* response = (uint8_t*)"toggling echo\n";
+    if(echo == 0)
+    {
+      echo =1;
+    }
+    else
+    {
+      echo = 0;
+    }
+    HAL_UART_Transmit(&huart3, response, strlen((char*)response), HAL_MAX_DELAY);
+  }
+  else if(strncmp((char*)msg, "tx_hello", 8) == 0)
+  {
+    uint8_t* response = (uint8_t*)"toggling tx_hello\n";
+    if(tx_hello == 0)
+    {
+      tx_hello =1;
+    }
+    else
+    {
+      tx_hello = 0;
+    }
+    HAL_UART_Transmit(&huart3, response, strlen((char*)response), HAL_MAX_DELAY);
+  }
+}
+
 int checkUartRx()
 { 
   uint8_t msg[200];
@@ -146,14 +180,19 @@ int checkUartRx()
   if(rx_finished == 1)
   {
     //echo
-    
-    size_t len = snprintf((char*)msg, sizeof(msg), "%s", rx_buffer);
-    HAL_StatusTypeDef tx_result = HAL_UART_Transmit(&huart3, msg, len, HAL_MAX_DELAY);
-    if (tx_result != HAL_OK)
+    process_message(rx_buffer);
+
+    if (echo == 1)
     {
+      size_t len = snprintf((char*)msg, sizeof(msg), "%s", rx_buffer);
+      HAL_StatusTypeDef tx_result = HAL_UART_Transmit(&huart3, msg, len, HAL_MAX_DELAY);
+      if (tx_result != HAL_OK)
+      {
         HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);
+      }
     }
 
+    
     rx_index=0;
     memset((void*)rx_buffer, 0, sizeof(rx_buffer));
     rx_finished=0;
@@ -168,12 +207,13 @@ int checkUartRx()
   {
     //error: reset buffer
     size_t len = snprintf((char*)msg, sizeof(msg), "Error: Buffer overflow, MAX %d characters, resetting buffer", sizeof(rx_buffer));
+
     HAL_StatusTypeDef tx_result = HAL_UART_Transmit(&huart3, msg, len, HAL_MAX_DELAY);
     if (tx_result != HAL_OK)
     {
-        HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);
+      HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);
     }
-    
+
     rx_index=0;
     memset((void*)rx_buffer, 0, sizeof(rx_buffer));
     rx_finished=0;
@@ -186,6 +226,8 @@ int checkUartRx()
   }
   return 0;
 }
+
+
 
 /**
   * @brief  The application entry point.
@@ -237,7 +279,7 @@ int main(void)
   HAL_UART_Transmit(&huart3, msg, strlen((char *)msg), HAL_MAX_DELAY);
   
   /* USER CODE END 2 */
-
+  int counter = 0;
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
@@ -245,9 +287,18 @@ int main(void)
     /* USER CODE END WHILE */
     checkUartRx();
     
-
+    
+    if(tx_hello == 1)
+    { 
+      size_t len = snprintf((char *)msg, sizeof(msg), "Hello %d from STM32F7\r\n", counter++);
+      HAL_StatusTypeDef tx_result = HAL_UART_Transmit(&huart3, msg, len, HAL_MAX_DELAY);
+      if (tx_result == HAL_OK)
+      {
+        HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
+      }
+    }
+    
     HAL_GPIO_TogglePin(LD1_GPIO_Port, LD1_Pin);
-    HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
     HAL_Delay(delay);
     /* USER CODE BEGIN 3 */
   }
