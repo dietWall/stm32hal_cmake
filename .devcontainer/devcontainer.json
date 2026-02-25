@@ -15,6 +15,5 @@
     },
     "workspaceFolder": "/home/developer/workspace",
     "workspaceMount": "source=${localWorkspaceFolder},target=/home/developer/workspace,type=bind,consistency=bind",
-    "postStartCommand" : "./tests/setup_test_env.sh",
-    "runArgs": ["--device=/dev/ttyACM0"]
+    "postStartCommand" : "./tests/setup_test_env.sh"
 }
