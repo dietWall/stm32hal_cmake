@@ -1,5 +1,8 @@
 - name: Play for downloading tcl_utils
   hosts: localhost
+  vars:
+    filepath: /home/dw/code/stm32hal_cmake/repo_config/tmp_download/
+    package_dir: /home/dw/code/stm32hal_cmake/repo_config/tmp_install/
   tasks:
     - name: Installiere System-Pakete
       ansible.builtin.apt:
@@ -27,5 +30,12 @@
           Accept: "application/octet-stream"
           Authorization: Bearer {{ lookup('ansible.builtin.env', 'TCL_UTILS_TOKEN') }}
           X-GitHub-Api-Version: 2022-11-28
-        dest: /home/dw/code/stm32hal_cmake/repo_config/tmp_download
+        dest: "{{ filepath }}"
         mode: "0644"
+      register: destination
+
+    - name: Extract zip file
+      ansible.builtin.unarchive:
+        src: {{ filepath }}
+        dest: {{ package_dir }}
+      register: files
