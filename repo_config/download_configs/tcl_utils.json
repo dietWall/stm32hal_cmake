@@ -1,0 +1,7 @@
+{
+    "package" : "openocd-tcl-controller",
+    "organization" : "dietWall",
+    "repository" : "openocd-tcl-controller",
+    "token_name" : "TCL_UTILS_TOKEN",
+    "filename_extensions": [".whl", ".tar.gz"]
+}

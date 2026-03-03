@@ -1,0 +1,28 @@
+---
+- name: Play for downloading tcl_utils
+  hosts: localhost
+  tasks:
+    - name: Set Repo_root
+      ansible.builtin.shell: git rev-parse --show-toplevel
+      register: repo_root
+
+    - name: Print repo_root
+      ansible.builtin.debug:
+        msg: "Repo_Root = {{ repo_root.stdout }}"
+
+    - name: Create venv
+      ansible.builtin.shell: python3 -m venv {{ repo_root.stdout }}/.venv
+
+    - name: Check for package_requirementes.txt
+      ansible.builtin.stat:
+        path: "{{ repo_root.stdout }}/package_requirements.txt"
+      register: requirements_exist
+        
+    - name: Create venv and Install from Requirements
+      ansible.builtin.pip:
+        virtualenv: "{{ repo_root.stdout }}/.venv"
+        requirements: "{{ repo_root.stdout }}/package_requirements.txt"
+      when: requirements_exist.stat.exists
+
+    - name: Install from directory
+      ansible.builtin.shell: bash -c "source "{{ repo_root.stdout }}/.venv/bin/activate" && pip install "{{ repo_root.stdout }}/repo_config/ansible/tmp_install/*""

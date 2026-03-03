@@ -1,0 +1,61 @@
+---
+- name: Start container
+  hosts: localhost
+  gather_facts: false
+  vars:
+    container_name: stm32hal_build
+    install_dir: /workspace/repo_config/ansible/tmp_install
+  tasks:
+    - name: Set Repo_root
+      ansible.builtin.shell: git rev-parse --show-toplevel
+      register: repo_root 
+
+    - name: print repo_root
+      debug:
+        msg: "Repo Root is = {{ repo_root.stdout }}"
+
+    - name: Start container
+      community.docker.docker_container:
+        cleanup: true
+        command: bash
+        detach: true
+        interactive: true
+        image: stm32
+        name: "{{ container_name }}"
+        output_logs: true
+        state: started
+        mounts:
+          - type: bind
+            source: "{{ repo_root.stdout }}"
+            target: /workspace
+
+    - name: Create Container Virtual Environment
+      community.docker.docker_container_exec:
+        container: "{{ container_name }}"
+        command: "python3 -m venv /workspace/.venv_cont"
+
+    - name: Install Requirements
+      community.docker.docker_container_exec:
+        container: "{{ container_name }}"
+        command: bash -c "source .venv_cont/bin/activate && pip install -r requirements.txt"
+    
+    - name: Install Requirements
+      community.docker.docker_container_exec:
+        container: "{{ container_name }}"
+        command: bash -c "source .venv_cont/bin/activate && pip install {{ install_dir }}/*"
+
+    - name: Create Build Files
+      community.docker.docker_container_exec:
+        container: "{{ container_name }}"
+        command: "cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE=/home/developer/toolchain/arm-none-eabi-gcc.cmake"
+
+    - name: Build All
+      community.docker.docker_container_exec:
+        container: "{{ container_name }}"
+        command: "make -C build/"
+
+    - name: Pytest
+      community.docker.docker_container_exec:
+        container: "{{ container_name }}"
+        command: bash -c "source .venv_cont/bin/activate && pytest tests/"
+
