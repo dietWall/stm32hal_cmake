@@ -6,10 +6,10 @@
     package_dir: "{{ playbook_dir }}/tmp_install/"
   
   tasks:
-    - name: Install required packages
-      ansible.builtin.apt:
-        name: [unzip]
-        state: present
+    # - name: Install required packages
+    #   ansible.builtin.apt:
+    #     name: [unzip]
+    #     state: present
 
     - name: Create download directory
       ansible.builtin.file:
