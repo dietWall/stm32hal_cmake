@@ -16,7 +16,9 @@
 			"type": "shell",
 			"label": "Start Serial Monitor",
 			"command": [
-				"source", "/home/developer/workspace/.venv/bin/activate", "&&",
+				"source",
+				"/home/developer/workspace/.venv/bin/activate",
+				"&&",
 				"/home/developer/workspace/tests/lib/serial_monitor.py"
 			],
 			"problemMatcher": []
@@ -25,7 +27,10 @@
 			"label": "Connect to exported serial interface",
 			"type": "process",
 			"command": "socat",
-			"args": ["PTY,link=/home/developer/workspace/tty1,raw,echo=0", "tcp:dw-latitude-e6440:3002&"], //socat PTY,link=/home/developer/workspace/tty1,raw,echo=0 tcp:${input:hostname}:3002
+			"args": [
+				"PTY,link=/home/developer/workspace/tty1,raw,echo=0",
+				"tcp:dw-latitude-e6440:3002&"
+			],
 			"isBackground": true,
 			"problemMatcher": []
 		}

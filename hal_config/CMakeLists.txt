@@ -8,6 +8,7 @@ set(HAL_CONFIG_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/include")
 add_library(hal_config INTERFACE)
 target_include_directories(hal_config INTERFACE ${HAL_CONFIG_INCLUDE_DIR})
 
+
 # Optionally, install the header files and the target
 install(DIRECTORY ${HAL_CONFIG_INCLUDE_DIR}/ DESTINATION include)
 install(TARGETS hal_config EXPORT hal_configTargets)

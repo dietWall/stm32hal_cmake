@@ -1,0 +1,4 @@
+pytest
+pyserial
+mapfile_parser
+cmsis_svd

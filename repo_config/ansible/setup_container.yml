@@ -1,18 +1,22 @@
 ---
-- name: Start container
+- name: Start container and install dependecies within it
   hosts: localhost
   gather_facts: false
   vars:
     container_name: stm32hal_build
-    install_dir: /workspace/repo_config/ansible/tmp_install
+    workspace_dir: /home/developer/workspace
   tasks:
     - name: Set Repo_root
       ansible.builtin.shell: git rev-parse --show-toplevel
       register: repo_root 
 
-    - name: print repo_root
+    - name: Print repo_root
       debug:
         msg: "Repo Root is = {{ repo_root.stdout }}"
+    
+    - name: Set install dir
+      set_fact:
+        install_dir: "{{ repo_root.stdout }}/repo_config/ansible/tmp_install"
 
     - name: Start container
       community.docker.docker_container:
@@ -27,17 +31,17 @@
         mounts:
           - type: bind
             source: "{{ repo_root.stdout }}"
-            target: /workspace
+            target: "{{ workspace_dir }}"
 
     - name: Create Container Virtual Environment
       community.docker.docker_container_exec:
         container: "{{ container_name }}"
-        command: "python3 -m venv /workspace/.venv_cont"
+        command: "python3 -m venv {{ workspace_dir }}/.venv_cont"
 
     - name: Install Requirements
       community.docker.docker_container_exec:
         container: "{{ container_name }}"
-        command: bash -c "source .venv_cont/bin/activate && pip install -r requirements.txt"
+        command: bash -c "source {{ workspace_dir }}/.venv_cont/bin/activate && pip install -r requirements.txt"
     
     - name: Install Requirements
       community.docker.docker_container_exec:
