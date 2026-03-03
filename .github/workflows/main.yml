@@ -2,9 +2,9 @@ name: First CI
 
 on:
   push:
-    branches: [ "*" ]
+    branches: [ "feature/ci" ]
   pull_request:
-    branches: [ "*" ]
+    branches: [ "master" ]
 
 jobs:
   build:
