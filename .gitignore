@@ -4,3 +4,5 @@ __pycache__
 .pytest_cache
 tests/log*
 tty1
+*.env*
+tmp*

@@ -4,7 +4,7 @@
     "customizations": {
         "vscode": {
             "settings": {
-                "terminal.integrated.shell.linux": "/bin/bash"
+                "terminal.integrated.shell.linux": "/usr/bin/bash"
             },
             "extensions": [
                 "ms-vscode.cmake-tools",
@@ -14,6 +14,9 @@
         }
     },
     "workspaceFolder": "/home/developer/workspace",
-    "workspaceMount": "source=${localWorkspaceFolder},target=/home/developer/workspace,type=bind,consistency=bind",
-    "postStartCommand" : "./tests/setup_test_env.sh"
+    "workspaceMount": "source=${localWorkspaceFolder},target=/home/developer/workspace,type=bind,consistency=bind",    
+    "containerEnv": {
+        "SHELL": "/bin/bash"
+    }
+    "postStartCommand": "${containerWorkspaceFolder}/setup_dev_env.sh"
 }

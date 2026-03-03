@@ -16,8 +16,11 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     STM32F7xx_CMSIS_Device      #startup files
 )
 
+#message("LINKER_FILE: ${LINKER_FILE}")
+
 target_link_options(${PROJECT_NAME}
-    PUBLIC "-T/home/developer/workspace/Examples/simple_main/STM32F767ZITX_FLASH.ld"
+    PUBLIC "-T${CMAKE_CURRENT_SOURCE_DIR}/STM32F767ZITX_FLASH.ld"
+    #PUBLIC "-T${LINKER_FILE}"
     PUBLIC "-Wl,-Map=${PROJECT_NAME}.map"       #export map after linking, still required for debugging
 )
 

@@ -25,7 +25,8 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
 )
 
 target_link_options(${PROJECT_NAME}
-    PUBLIC "-T/home/developer/workspace/Examples/simple_main/STM32F767ZITX_FLASH.ld"
+    #PUBLIC "-T/home/developer/workspace/Examples/simple_main/STM32F767ZITX_FLASH.ld"
+    PUBLIC "-T${CMAKE_CURRENT_SOURCE_DIR}/STM32F767ZITX_FLASH.ld"
     #PUBLIC "-x assembler-with-cpp" # // this is for the startup file
     PUBLIC "-Wl,-Map=${PROJECT_NAME}.map"       #export map after linking, still required for debugging
 )
