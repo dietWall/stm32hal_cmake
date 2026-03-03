@@ -17,6 +17,6 @@
     "workspaceMount": "source=${localWorkspaceFolder},target=/home/developer/workspace,type=bind,consistency=bind",    
     "containerEnv": {
         "SHELL": "/bin/bash"
-    }
+    },
     "postStartCommand": "${containerWorkspaceFolder}/setup_dev_env.sh"
 }
