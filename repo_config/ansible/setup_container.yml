@@ -42,3 +42,8 @@
       community.docker.docker_container_exec:
         container: "{{ container_name }}"
         command: bash -c "source {{ virtualenv }}/bin/activate && pip install {{ packages_dir }}/*"
+
+    - name: Stop & Remove Container
+      community.docker.docker_container:
+        name: "{{ container_name }}"
+        state: absent
