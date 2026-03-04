@@ -48,7 +48,7 @@
     - name: Run Tests
       community.docker.docker_container_exec:
         container: "{{ container_name }}"
-        command: bash -c "source {{ virtualenv }}/bin/activate && pytest -s -v {{ workspace_dir }}/tests/"
+        command: bash -c "source {{ virtualenv }}/bin/activate && pytest -s -v {{ workspace_dir }}/tests/ --junit-xml=test_results.xml"
         chdir: "{{ workspace_dir }}"
         
 
