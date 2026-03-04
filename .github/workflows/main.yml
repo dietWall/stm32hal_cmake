@@ -1,4 +1,4 @@
-name: First CI
+name: Workspace init
 
 on:
   push:
@@ -19,8 +19,8 @@ jobs:
       env:
         TCL_UTILS_TOKEN: ${{ secrets.TCL_UTILS_TOKEN }}
         REPO_HELPER_TOKEN: ${{ secrets.REPO_HELPER_TOKEN }}
+    
+    - name: Start Container
+      run: source repo_config/.venv_installation/bin/activate && ansible-playbook -c local repo_config/ansible/setup_container.yml
 
-
-    # - name: start container
-    #   run: 
       

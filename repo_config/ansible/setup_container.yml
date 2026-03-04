@@ -3,20 +3,15 @@
   hosts: localhost
   gather_facts: false
   vars:
-    container_name: stm32hal_build
+    container_name: stm32hal
     workspace_dir: /home/developer/workspace
+    packages_dir: "{{ workspace_dir }}/repo_config/ansible/tmp_install"
+    virtualenv: "{{ workspace_dir }}/.venv_container"
   tasks:
-    - name: Set Repo_root
+
+    - name: Set Repo_root for Mount
       ansible.builtin.shell: git rev-parse --show-toplevel
       register: repo_root 
-
-    - name: Print repo_root
-      debug:
-        msg: "Repo Root is = {{ repo_root.stdout }}"
-    
-    - name: Set install dir
-      set_fact:
-        install_dir: "{{ repo_root.stdout }}/repo_config/ansible/tmp_install"
 
     - name: Start container
       community.docker.docker_container:
@@ -36,30 +31,14 @@
     - name: Create Container Virtual Environment
       community.docker.docker_container_exec:
         container: "{{ container_name }}"
-        command: "python3 -m venv {{ workspace_dir }}/.venv_cont"
+        command: "python3 -m venv {{ virtualenv }}"
 
     - name: Install Requirements
       community.docker.docker_container_exec:
         container: "{{ container_name }}"
-        command: bash -c "source {{ workspace_dir }}/.venv_cont/bin/activate && pip install -r requirements.txt"
+        command: bash -c "source {{ virtualenv }}/bin/activate && pip install -r {{ workspace_dir }}/requirements.txt"
     
-    - name: Install Requirements
+    - name: Install Downloaded Packages
       community.docker.docker_container_exec:
         container: "{{ container_name }}"
-        command: bash -c "source .venv_cont/bin/activate && pip install {{ install_dir }}/*"
-
-    - name: Create Build Files
-      community.docker.docker_container_exec:
-        container: "{{ container_name }}"
-        command: "cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE=/home/developer/toolchain/arm-none-eabi-gcc.cmake"
-
-    - name: Build All
-      community.docker.docker_container_exec:
-        container: "{{ container_name }}"
-        command: "make -C build/"
-
-    - name: Pytest
-      community.docker.docker_container_exec:
-        container: "{{ container_name }}"
-        command: bash -c "source .venv_cont/bin/activate && pytest tests/"
-
+        command: bash -c "source {{ virtualenv }}/bin/activate && pip install {{ packages_dir }}/*"
