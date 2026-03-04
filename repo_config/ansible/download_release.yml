@@ -6,10 +6,10 @@
     package_dir: "{{ playbook_dir }}/tmp_install/"
   
   tasks:
-    - name: Install required packages
-      ansible.builtin.apt:
-        name: [unzip]
-        state: present
+    # - name: Install required packages
+    #   ansible.builtin.apt:
+    #     name: [unzip]
+    #     state: present
 
     - name: Create download directory
       ansible.builtin.file:
@@ -70,7 +70,7 @@
     
     - name: Set file_to_copy if whl package
       ansible.builtin.set_fact:
-        file_to_copy: "{{ dowloaded_file.dest }}"
+        file_to_copy: "{{ dowloaded_file }}"
       when: dowloaded_file.dest.endswith('.whl')
 
     - name: Print filename 2
@@ -79,7 +79,7 @@
 
     - name: Copy whl file
       ansible.builtin.copy:
-        src: "{{ file_to_copy }}"
+        src: "{{ file_to_copy.dest }}"
         dest: "{{ package_dir }}"
         mode: "0755"
 

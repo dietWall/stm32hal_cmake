@@ -6,3 +6,4 @@ tests/log*
 tty1
 *.env*
 tmp*
+test_results*
