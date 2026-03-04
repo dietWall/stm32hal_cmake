@@ -42,6 +42,15 @@
       community.docker.docker_container_exec:
         container: "{{ container_name }}"
         command: bash -c "source {{ virtualenv }}/bin/activate && pip install {{ packages_dir }}/*"
+  #######
+  # Container is running: Test, Compile
+  #######
+    - name: Run Tests
+      community.docker.docker_container_exec:
+        container: "{{ container_name }}"
+        command: bash -c "source {{ virtualenv }}/bin/activate && pytest -s -v {{ workspace_dir }}/tests/"
+        chdir: "{{ workspace_dir }}"
+        
 
     - name: Stop & Remove Container
       community.docker.docker_container:
