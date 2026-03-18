@@ -23,6 +23,15 @@ jobs:
     
     - name: Start Container
       run: source repo_config/.venv_installation/bin/activate && ansible-playbook -c local repo_config/ansible/setup_container.yml
+
+    - name: Archive Test Results
+      run: tar -czvf build_logs.tar.gz test_build/*/build_log.txt
+    
+    - name: Upload Test Results  
+      uses: actions/upload-artifact@v6
+      with:
+          name: build_logs
+          path: build_logs.tar.gz
     
     - name: publish test_results
       uses: EnricoMi/publish-unit-test-result-action@v2
