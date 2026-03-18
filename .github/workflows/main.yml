@@ -1,8 +1,7 @@
-name: Workspace init
+name: Compile Tests
 
 on:
   push:
-    branches: [ "*" ]
   pull_request:
     branches: [ "master" ]
 
