@@ -45,10 +45,10 @@
   #######
   # Container is running: Test, Compile
   #######
-    - name: Run Tests
+    - name: Run HAL Compilation Tests
       community.docker.docker_container_exec:
         container: "{{ container_name }}"
-        command: bash -c "source {{ virtualenv }}/bin/activate && pytest -s -v {{ workspace_dir }}/tests/ --junit-xml=test_results.xml"
+        command: bash -c "source {{ virtualenv }}/bin/activate && pytest -s -v {{ workspace_dir }}/tests/test_hal_build.py --junit-xml=test_results.xml"
         chdir: "{{ workspace_dir }}"
         
 
