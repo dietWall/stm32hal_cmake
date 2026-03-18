@@ -4,25 +4,32 @@ import os
 import datetime
 
 from tcl_utils.serial_monitor import SerialReaderWriter
+from repo_helper import Repo_Helper
 
 
 def pytest_addoption(parser):
     parser.addoption("--clean", action="store_true", default=False, help="creates a clean cmake build for the tests")
-    parser.addoption("--log_to_file", action="store_true", default=False, help="writes build and gdb logs to files to: <repo_root>/tests/log/<build_type>/")
+    parser.addoption("--log", action="store_true", default=False, help="writes build logs to console")
     parser.addoption("--host", help="defines the hostname to execute the tests", default = "dw-latitude-e6440")
+    parser.addoption("--build_dir", help="defines the directory to use for building the hal and test applications", default = "/home/developer/workspace/test_build")
+    
+@pytest.fixture(scope="session")
+def build_dir_base(request):
+    return request.config.getoption("--build_dir")
 
-def repo_root() -> str:
-    git_result = subprocess.run(["git", "rev-parse", "--show-toplevel"],capture_output=True)
-    repo_root = git_result.stdout.strip().decode("utf-8")
-    return repo_root
+@pytest.fixture(scope="session", autouse=True)
+def clean(request, build_dir_base):
+    clean = request.config.getoption("--clean")
+    print(f"clean is: {clean}")
+    if clean:
+        print(f"removing {build_dir_base}")
+        helper = Repo_Helper.Repo_Helper()
+        helper.execute(f"rm -rf {build_dir_base}")
+    return clean
 
 @pytest.fixture(scope="session")
-def clean(request):
-    return request.config.getoption("--clean")
-
-@pytest.fixture(scope="session")
-def log_to_file(request):
-    return request.config.getoption("--log_to_file")
+def log(request):
+    return request.config.getoption("--log")
 
 @pytest.fixture(scope="session")
 def host(request):
@@ -34,39 +41,35 @@ cmake_build_types = ["Debug", "Release", "RelWithDebInfo", "MinSizeRel"]
 def build_type(request):
     return request.param
 
-binary_file_locations = {
-    "Debug": {
-        "firmware" : f"{repo_root()}/tests/build/Debug/Examples/Board_Init/basic_board_example.elf", 
-        "map" : f"{repo_root()}/tests/build/Debug/Examples/Board_Init/basic_board_example.map" 
-        },
-    "Release": {
-        "firmware" : f"{repo_root()}/tests/build/Release/Examples/Board_Init/basic_board_example.elf", 
-        "map" : f"{repo_root()}/tests/build/Release/Examples/Board_Init/basic_board_example.map" 
-        },
-    "RelWithDebInfo": {
-        "firmware" : f"{repo_root()}/tests/build/RelWithDebInfo/Examples/Board_Init/basic_board_example.elf", 
-        "map" : f"{repo_root()}/tests/build/RelWithDebInfo/Examples/Board_Init/basic_board_example.map" 
-        },
-    "MinSizeRel": {
-        "firmware" : f"{repo_root()}/tests/build/MinSizeRel/Examples/Board_Init/basic_board_example.elf", 
-        "map" : f"{repo_root()}/tests/build/MinSizeRel/Examples/Board_Init/basic_board_example.map" 
-    }
-}
-
-@pytest.fixture(scope="module")
-def firmware(build_type):
-    binary_file = binary_file_locations[build_type]["firmware"]
-    return binary_file
-
-@pytest.fixture(scope="module")
-def mapfile(build_type):
-    map_file = binary_file_locations[build_type]["map"]
-    return map_file
+@pytest.fixture
+def build_dir(build_type, build_dir_base):
+    repo_helper = Repo_Helper.Repo_Helper(logfile=None)
+    build_dir = f"{build_dir_base}/{build_type}"
+    print(f"creating build in {build_dir}")
+    repo_helper.execute(f"mkdir -p {build_dir}")
+    return build_dir
 
 @pytest.fixture
-def build_dir(build_type):
-    build_dir = f"{repo_root()}/tests/build"
-    print(f"creating build in {build_dir}")
+def toolchain_file():
+    return "/home/developer/toolchain/arm-none-eabi-gcc.cmake"
+
+@pytest.fixture
+def build_logfile(build_dir):
+    from repo_helper import Repo_Helper
+    repo_helper = Repo_Helper.Repo_Helper(logfile=None)
+    log_file = f"{build_dir}/build_log.txt"
+    print(f"creating logfile for test in: {log_file}")
+    repo_helper.execute(f"touch {log_file}")
+    return log_file
+
+@pytest.fixture(scope="session")
+def repo_root():
+    from repo_helper import Repo_Helper
+    repo_helper = Repo_Helper.Repo_Helper(logfile=None)
+    _, output = repo_helper.repo_root()
+    print(f"repo root is: {output}")
+    return output
+
 
 def clean_directory(build_dir) -> int:
     try: 
@@ -100,7 +103,7 @@ def cmake_run(cmake_root_dir: str, build_dir: str, build_type: str, cmake_log_fi
 
     result = subprocess.run(["cmake", "-S", cmake_root_dir,
        "-B", build_dir,
-       "-DCMAKE_TOOLCHAIN_FILE=/home/developer/toolchain/arm-none-eabi-gcc.cmake",
+       "-DCMAKE_TOOLCHAIN_FILE=",
        f"-DCMAKE_BUILD_TYPE={build_type}"], check=True,
        stdout=logfile, stderr=logfile
        )
@@ -117,7 +120,7 @@ def make_run(build_type_directory: str, make_log_file: str|None) -> int:
     print(f"make result for {build_type_directory}: {result.returncode}")
     return result.returncode
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="session")
 def compile(clean, log_to_file):
     print("")
     print(f"compile: {repo_root()}")
@@ -179,7 +182,7 @@ def openocd_controller(firmware, mapfile, host):
 
     return
 
-@pytest.fixture(scope="module", autouse=True)
+@pytest.fixture(scope="module") #autouse=True)
 def flash_binary_file(log_to_file, build_type, firmware):
     command = f"gdb-multiarch -f {firmware}"
     this_directory = os.path.dirname(__file__)
@@ -211,7 +214,7 @@ def serial_interface(build_type):
     yield ser
     return
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="session") #autouse=True)
 def setup_serial_interface(host="dw-latitude-e6440", port=3002):
     print(f"setting up serial interface for host: {host}:{port}")
     from repo_helper.Repo_Helper import Repo_Helper
