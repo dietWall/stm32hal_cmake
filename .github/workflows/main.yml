@@ -24,10 +24,10 @@ jobs:
     - name: Start Container
       run: source repo_config/.venv_installation/bin/activate && ansible-playbook -c local repo_config/ansible/setup_container.yml
 
-    - name: Archive Test Results
+    - name: Archive Build Logs
       run: tar -czvf build_logs.tar.gz test_build/*/build_log.txt
     
-    - name: Upload Test Results  
+    - name: Upload Build Logs
       uses: actions/upload-artifact@v6
       with:
           name: build_logs
