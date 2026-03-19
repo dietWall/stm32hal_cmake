@@ -9,31 +9,29 @@ built_types = ["Debug", "Release", "RelWithDebInfo", "MinSizeRel"]
 
 @pytest.mark.parametrize("build_type", built_types)
 def test_configure(build_type, toolchain_file, build_logfile, repo_root, build_dir, log):
-    repo_helper = Repo_Helper.Repo_Helper(logfile=build_logfile)
-    cmake_command = f"cmake -S {repo_root} -B {build_dir} -DCMAKE_BUILD_TYPE={build_type} -DCMAKE_TOOLCHAIN_FILE={toolchain_file} -DCMAKE_INSTALL_PREFIX={build_dir}/install/"
-    result, _ = repo_helper.execute(cmake_command, log=log, wait=True)
-    assert result.returncode == 0, f"cmake failed with: {result.returncode}"
-
+    from conftest import configure
+    start_time = datetime.datetime.now()
+    result_code = configure(cmake_root_dir=repo_root, build_dir=build_dir, toolchain_file=toolchain_file, build_type=build_type, log=log, install_prefix=None, build_logfile=build_logfile)
+    end_time = datetime.datetime.now()
+    print(f"configure time for {build_type}: {end_time - start_time}")
+    assert result_code == 0, f"cmake failed with: {result_code}"
 
 @pytest.mark.parametrize("build_type", built_types)
 def test_build(build_type, build_logfile, build_dir, log):
-    make_command = f"make -C {build_dir}"
-    repo_helper = Repo_Helper.Repo_Helper(logfile=build_logfile)
+    from conftest import make
     start_time = datetime.datetime.now()
-    result, _ = repo_helper.execute(make_command, log=log, wait=True)
-    end_time = datetime.datetime.now()
+    result_code = make(build_dir, build_logfile, log)
+    end_time = datetime.datetime.now()   
     print(f"build time for {build_type}: {end_time - start_time}")
-    assert result.returncode == 0, f"make failed with: {result.returncode}"
+    assert result_code == 0, f"make failed with: {result_code}"
     
-
 
 @pytest.mark.parametrize("build_type", built_types)
 def test_install(build_type, build_logfile, build_dir, log):
-    make_command = f"make -C {build_dir} install"
-    repo_helper = Repo_Helper.Repo_Helper(logfile=build_logfile)
+    from conftest import make_install
     start_time = datetime.datetime.now()
-    result, _ = repo_helper.execute(make_command, log=log, wait=True)
+    result_code = make_install(build_dir, build_logfile, log)
     end_time = datetime.datetime.now()
     print(f"install time for {build_type}: {end_time - start_time}")
-    assert result.returncode == 0, f"make failed with: {result.returncode}"
+    assert result_code == 0, f"make failed with: {result_code}"
     

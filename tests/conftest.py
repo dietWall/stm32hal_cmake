@@ -58,7 +58,6 @@ def build_logfile(build_dir):
     from repo_helper import Repo_Helper
     repo_helper = Repo_Helper.Repo_Helper(logfile=None)
     log_file = f"{build_dir}/build_log.txt"
-    print(f"creating logfile for test in: {log_file}")
     repo_helper.execute(f"touch {log_file}")
     return log_file
 
@@ -70,6 +69,24 @@ def repo_root():
     print(f"repo root is: {output}")
     return output
 
+
+def configure(cmake_root_dir, build_dir, toolchain_file, build_type, log, install_prefix: str|None , build_logfile: str|None) -> int:
+    cmake_command = f"cmake -S {cmake_root_dir} -B {build_dir} -DCMAKE_BUILD_TYPE={build_type} -DCMAKE_TOOLCHAIN_FILE={toolchain_file} -DCMAKE_INSTALL_PREFIX={install_prefix if install_prefix != None else build_dir + '/install/'}"
+    helper = Repo_Helper.Repo_Helper(logfile=build_logfile)
+    result, _ = helper.execute(cmake_command, log=log, wait=True)
+    return result.returncode
+
+def make(build_dir, build_logfile: str|None, log) -> int:
+    make_command = f"make -C {build_dir}"
+    helper = Repo_Helper.Repo_Helper(logfile=build_logfile)
+    result, _ = helper.execute(make_command, log=log, wait=True)
+    return result.returncode
+
+def make_install(build_dir, build_logfile: str|None, log) -> int:
+    make_command = f"make -C {build_dir} install"
+    helper = Repo_Helper.Repo_Helper(logfile=build_logfile)
+    result, _ = helper.execute(make_command, log=log, wait=True)
+    return result.returncode
 
 def clean_directory(build_dir) -> int:
     try: 
@@ -222,9 +239,3 @@ def setup_serial_interface(host="dw-latitude-e6440", port=3002):
     result, output = helper.execute(command=f"socat PTY,link=/home/developer/workspace/tty1,raw,echo=0 tcp:{host}:{port}", wait=False)
     yield None
     helper.execute(f"killall socat")
-    # if result.returncode == 0:
-    #     pid = output[0].split(" ")[1]
-    #     print(f"socat started successfully with pid: {pid}")    
-    # else:
-    #     print(f"Startup of socat to read serial failed with: {result.returncode}")
-    #     print(f"output: {output}")
