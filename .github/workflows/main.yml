@@ -38,5 +38,5 @@ jobs:
       if: (!cancelled())
       with:
         files: |
-          test_results.xml
+          test_results_*.xml
             
