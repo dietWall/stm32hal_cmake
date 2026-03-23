@@ -141,45 +141,32 @@ set_target_properties(STM32F7xx_CMSIS_Device PROPERTIES
 )
 
 
-# target_compile_options(STM32F7xx_CMSIS_Device
-# # some of this settings are required for correct compilation of initialization code
-# # I can´t tell yet, which of them are required and which are not
-# # I guess -mcpu.. and -mfpu should be the same as in executable, 
-# # otherwise mcu goes into HardFault because of illegal instruction
-# # todo: reduce this instructions to a minimum, better: inherit this settings from executable cmake file
-# # or maybe even better: provide this settings with MCU selection process
-# PUBLIC "-ffunction-sections"
-#     PUBLIC "-fdata-sections"
-#     PUBLIC "-Wall"
-#     PUBLIC "-fstack-usage"
-#     PUBLIC "-MMD"
-#     PUBLIC "-MP"
-#     PUBLIC "--specs=nano.specs"
-#     PUBLIC "-mfpu=fpv5-d16"
-#     PUBLIC "-mcpu=cortex-m7"
-#     PUBLIC "-mfloat-abi=hard"
-# )
+target_compile_options(STM32F7xx_CMSIS_Device
+PUBLIC "-ffunction-sections"
+    PUBLIC "-fdata-sections"
+    PUBLIC "-Wall"
+    PUBLIC "-fstack-usage"
+    PUBLIC "-MMD"
+    PUBLIC "-MP"
+    PUBLIC "--specs=nano.specs"
+    PUBLIC "-mfpu=fpv5-d16"
+    PUBLIC "-mcpu=cortex-m7"
+    PUBLIC "-mfloat-abi=hard"
+)
 
 
-# target_link_options(STM32F7xx_CMSIS_Device
-# # some of this settings are required for correct selection of the newlib(-nano)
-# # if they are not passed, the cpu enters Hardfault before calling main function (because ld links wrong libraries)
-# # I can´t tell yet, which of them are required and which are not
-# # I guess -mcpu.. and -mfpu should be the same as in executable, 
-# # otherwise mcu goes into HardFault because of illegal instruction
-# #todo: same as in compile_definitions: provide a mcu specific cmake file? / Inherit from executable
-
-# PUBLIC "-ffunction-sections"
-#     PUBLIC "-fdata-sections"
-#     PUBLIC "-Wall"
-#     PUBLIC "-fstack-usage"
-#     PUBLIC "-MMD"
-#     PUBLIC "-MP"
-#     PUBLIC "--specs=nano.specs"
-#     PUBLIC "-mfpu=fpv5-d16"
-#     PUBLIC "-mcpu=cortex-m7"
-#     PUBLIC "-mfloat-abi=hard"
-# )
+target_link_options(STM32F7xx_CMSIS_Device
+PUBLIC "-ffunction-sections"
+    PUBLIC "-fdata-sections"
+    PUBLIC "-Wall"
+    PUBLIC "-fstack-usage"
+    PUBLIC "-MMD"
+    PUBLIC "-MP"
+    PUBLIC "--specs=nano.specs"
+    PUBLIC "-mfpu=fpv5-d16"
+    PUBLIC "-mcpu=cortex-m7"
+    PUBLIC "-mfloat-abi=hard"
+)
 
 install(DIRECTORY ${STM32F7xx_HAL_INCLUDE_DIR}/ DESTINATION include/)
 install(TARGETS STM32F7xx_HAL_Driver DESTINATION lib/)
@@ -214,10 +201,4 @@ install(TARGETS CMSISCore
         INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
         )
 
-
-#install(EXPORT CMSISCore DESTINATION lib/cmake/CMSISCore)
-#install(EXPORT STM32F7xx_CMSIS_Device DESTINATION lib/cmake/STM32F7xx_CMSIS_Device)
-
-
-#add_subdirectory(Examples)
 

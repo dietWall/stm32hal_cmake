@@ -1,6 +1,3 @@
-#this file tests not the hal itself, but rather the infrastructure
-# build system, packaging and installation process
-
 import pytest
 from repo_helper import Repo_Helper
 import datetime
