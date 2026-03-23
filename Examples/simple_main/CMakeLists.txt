@@ -13,6 +13,7 @@ add_executable(${PROJECT_NAME} ${SOURCES})
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
     stm32f7xx_cmsis_device      #startup files
+    STM32F7xx_HAL_Driver
 )
 
 
