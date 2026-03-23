@@ -1,9 +1,8 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.25)
 project(minimal_main LANGUAGES C CXX ASM)
 
-set(CMAKE_VERBOSE_MAKEFILE TRUE)
+add_compile_definitions("STM32F767xx")
 
-# Collect all source files
 set(SOURCES
     main.c
     syscalls.c              #newlib-stuff
@@ -13,14 +12,12 @@ set(SOURCES
 add_executable(${PROJECT_NAME} ${SOURCES})
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
-    STM32F7xx_CMSIS_Device      #startup files
+    stm32f7xx_cmsis_device      #startup files
 )
 
-#message("LINKER_FILE: ${LINKER_FILE}")
 
 target_link_options(${PROJECT_NAME}
     PUBLIC "-T${CMAKE_CURRENT_SOURCE_DIR}/STM32F767ZITX_FLASH.ld"
-    #PUBLIC "-T${LINKER_FILE}"
     PUBLIC "-Wl,-Map=${PROJECT_NAME}.map"       #export map after linking, still required for debugging
 )
 
@@ -35,4 +32,19 @@ PUBLIC "-ffunction-sections"
     PUBLIC "--specs=nano.specs"
     PUBLIC "-mfpu=fpv5-d16"
     PUBLIC "-mcpu=cortex-m7"
+    PUBLIC "-mfloat-abi=hard"
+)
+
+target_link_options(${PROJECT_NAME}
+#todo: figure out minimum compile options
+PUBLIC "-ffunction-sections"
+    PUBLIC "-fdata-sections"
+    PUBLIC "-Wall"
+    PUBLIC "-fstack-usage"
+    PUBLIC "-MMD"
+    PUBLIC "-MP"
+    PUBLIC "--specs=nano.specs"
+    PUBLIC "-mfpu=fpv5-d16"
+    PUBLIC "-mcpu=cortex-m7"
+    PUBLIC "-mfloat-abi=hard"
 )

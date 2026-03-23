@@ -1,9 +1,8 @@
 cmake_minimum_required(VERSION 3.25)
 project(basic_board_example LANGUAGES C CXX ASM)
 
-set(CMAKE_VERBOSE_MAKEFILE TRUE)
+add_compile_definitions("STM32F767xx") # this is required for the HAL drivers to know which MCU we are using
 
-# Collect all source files
 set(SOURCES
     Src/main.c
     Src/stm32f7xx_hal_msp.c
@@ -20,18 +19,31 @@ target_include_directories(${PROJECT_NAME}
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
-    STM32F7xx_CMSIS_Device          #startup files
+    stm32f7xx_cmsis_device          #startup files
     STM32F7xx_HAL_Driver            #HAL drivers
 )
 
 target_link_options(${PROJECT_NAME}
-    #PUBLIC "-T/home/developer/workspace/Examples/simple_main/STM32F767ZITX_FLASH.ld"
     PUBLIC "-T${CMAKE_CURRENT_SOURCE_DIR}/STM32F767ZITX_FLASH.ld"
-    #PUBLIC "-x assembler-with-cpp" # // this is for the startup file
     PUBLIC "-Wl,-Map=${PROJECT_NAME}.map"       #export map after linking, still required for debugging
 )
 
 target_compile_options(${PROJECT_NAME}
+#todo: figure out minimum compile options
+PUBLIC "-ffunction-sections"
+    PUBLIC "-fdata-sections"
+    PUBLIC "-Wall"
+    PUBLIC "-fstack-usage"
+    PUBLIC "-MMD"
+    PUBLIC "-MP"
+    PUBLIC "--specs=nano.specs"
+    PUBLIC "-mfpu=fpv5-d16"
+    PUBLIC "-mcpu=cortex-m7"
+    PUBLIC "-mfloat-abi=hard"
+)
+
+
+target_link_options(${PROJECT_NAME}
 #todo: figure out minimum compile options
 PUBLIC "-ffunction-sections"
     PUBLIC "-fdata-sections"

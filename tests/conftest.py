@@ -18,13 +18,14 @@ def build_dir_base(request):
     return request.config.getoption("--build_dir")
 
 @pytest.fixture(scope="session", autouse=True)
-def clean(request, build_dir_base):
+def clean(request, build_dir_base, repo_root):
     clean = request.config.getoption("--clean")
     print(f"clean is: {clean}")
     if clean:
-        print(f"removing {build_dir_base}")
         helper = Repo_Helper.Repo_Helper()
-        helper.execute(f"rm -rf {build_dir_base}")
+        for dir in [build_dir_base, f"{repo_root}/build/"]:
+            print(f"removing {dir}")
+            helper.execute(f"rm -rf {dir}")
     return clean
 
 @pytest.fixture(scope="session")
@@ -49,7 +50,7 @@ def build_dir(build_type, build_dir_base):
     repo_helper.execute(f"mkdir -p {build_dir}")
     return build_dir
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def toolchain_file():
     return "/home/developer/toolchain/arm-none-eabi-gcc.cmake"
 
