@@ -1,6 +1,6 @@
 {
     "name": "STM32 Dev Container",
-    "image": "stm32",
+    "image": "ghcr.io/dietwall/arm_gcc_image:latest",
     "customizations": {
         "vscode": {
             "settings": {
