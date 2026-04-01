@@ -24,13 +24,13 @@ class TestCompileExamples:
         assert result_code == 0, f"make install failed with: {result_code}"
     
     @pytest.mark.parametrize("app_dir", ["Examples/Board_Init", "Examples/simple_main"])
-    def test_compile_example(self, compile_install_hal, app_dir, toolchain_file):
+    def test_compile_example(self, compile_install_hal, app_dir, toolchain_file, build_type):
         from conftest import configure, make
         result = configure(
             cmake_root_dir=app_dir,
             build_dir=f"{app_dir}/build",
             toolchain_file=toolchain_file,
-            build_type="Release",
+            build_type=build_type,
             log=True,
             install_prefix=None,
             build_logfile=None
