@@ -33,6 +33,16 @@
 			],
 			"isBackground": true,
 			"problemMatcher": []
+		},
+		{
+			"label": "kill socat",
+			"type": "process",
+			"command": "killall",
+			"args": [
+				"socat"
+			],
+			"isBackground": true,
+			"problemMatcher": []
 		}
 	],
 	"inputs": [
