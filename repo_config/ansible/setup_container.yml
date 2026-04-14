@@ -45,20 +45,20 @@
   #######
   # Container is running: Test, Compile
   #######
-    - name: Run HAL Compilation Tests
-      community.docker.docker_container_exec:
-        container: "{{ container_name }}"
-        command: bash -c "source {{ virtualenv }}/bin/activate && pytest -s -v {{ workspace_dir }}/tests/test_hal_build.py --junit-xml=test_results_hal.xml"
-        chdir: "{{ workspace_dir }}"
+    # - name: Run HAL Compilation Tests
+    #   community.docker.docker_container_exec:
+    #     container: "{{ container_name }}"
+    #     command: bash -c "source {{ virtualenv }}/bin/activate && pytest -s -v {{ workspace_dir }}/tests/test_hal_build.py --junit-xml=test_results_hal.xml"
+    #     chdir: "{{ workspace_dir }}"
 
-    - name: Run Example Compilation Tests
-      community.docker.docker_container_exec:
-        container: "{{ container_name }}"
-        command: bash -c "source {{ virtualenv }}/bin/activate && pytest -s -v {{ workspace_dir }}/tests/test_compile_examples.py --junit-xml=test_results_examples.xml"
-        chdir: "{{ workspace_dir }}"
+    # - name: Run Example Compilation Tests
+    #   community.docker.docker_container_exec:
+    #     container: "{{ container_name }}"
+    #     command: bash -c "source {{ virtualenv }}/bin/activate && pytest -s -v {{ workspace_dir }}/tests/test_compile_examples.py --junit-xml=test_results_examples.xml"
+    #     chdir: "{{ workspace_dir }}"
         
 
-    - name: Stop & Remove Container
-      community.docker.docker_container:
-        name: "{{ container_name }}"
-        state: absent
+    # - name: Stop & Remove Container
+    #   community.docker.docker_container:
+    #     name: "{{ container_name }}"
+    #     state: absent

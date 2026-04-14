@@ -25,6 +25,14 @@ jobs:
     - name: Start Container
       run: source repo_config/.venv_installation/bin/activate && ansible-playbook -c local repo_config/ansible/setup_container.yml
 
+    - name: Run HAL Compilation Tests
+      run: |
+        docker exec -t stm32hal bash -c "source /home/developer/workspace/.venv_container/bin/activate && pytest -s -v /home/developer/workspace/tests/test_hal_build.py --junit-xml=/home/developer/workspace/test_results_hal.xml"
+
+    - name: Run Example Compilation Tests
+      run: |
+        docker exec -t stm32hal bash -c "source /home/developer/workspace/.venv_container/bin/activate && pytest -s -v /home/developer/workspace/tests/test_compile_examples.py --junit-xml=/home/developer/workspace/test_results_examples.xml"
+
     - name: Archive Build Logs
       run: tar -czvf build_logs.tar.gz test_build/*/build_log.txt
     
