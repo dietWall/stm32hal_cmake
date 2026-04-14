@@ -2,27 +2,36 @@ import pytest
 import subprocess
 import os
 import datetime
+import time
 
 from tcl_utils.serial_monitor import SerialReaderWriter
+from repo_helper import Repo_Helper
 
 
 def pytest_addoption(parser):
     parser.addoption("--clean", action="store_true", default=False, help="creates a clean cmake build for the tests")
-    parser.addoption("--log_to_file", action="store_true", default=False, help="writes build and gdb logs to files to: <repo_root>/tests/log/<build_type>/")
+    parser.addoption("--log", action="store_true", default=False, help="writes build logs to console")
     parser.addoption("--host", help="defines the hostname to execute the tests", default = "dw-latitude-e6440")
+    parser.addoption("--build_dir", help="defines the directory to use for building the hal and test applications", default = "/home/developer/workspace/test_build")
+    
+@pytest.fixture(scope="session")
+def build_dir_base(request):
+    return request.config.getoption("--build_dir")
 
-def repo_root() -> str:
-    git_result = subprocess.run(["git", "rev-parse", "--show-toplevel"],capture_output=True)
-    repo_root = git_result.stdout.strip().decode("utf-8")
-    return repo_root
+@pytest.fixture(scope="session", autouse=True)
+def clean(request, build_dir_base, repo_root):
+    clean = request.config.getoption("--clean")
+    print(f"clean is: {clean}")
+    if clean:
+        helper = Repo_Helper.Repo_Helper()
+        for dir in [build_dir_base, f"{repo_root}/build/"]:
+            print(f"removing {dir}")
+            helper.execute(f"rm -rf {dir}")
+    return clean
 
 @pytest.fixture(scope="session")
-def clean(request):
-    return request.config.getoption("--clean")
-
-@pytest.fixture(scope="session")
-def log_to_file(request):
-    return request.config.getoption("--log_to_file")
+def log(request):
+    return request.config.getoption("--log")
 
 @pytest.fixture(scope="session")
 def host(request):
@@ -34,194 +43,148 @@ cmake_build_types = ["Debug", "Release", "RelWithDebInfo", "MinSizeRel"]
 def build_type(request):
     return request.param
 
-binary_file_locations = {
-    "Debug": {
-        "firmware" : f"{repo_root()}/tests/build/Debug/Examples/Board_Init/basic_board_example.elf", 
-        "map" : f"{repo_root()}/tests/build/Debug/Examples/Board_Init/basic_board_example.map" 
-        },
-    "Release": {
-        "firmware" : f"{repo_root()}/tests/build/Release/Examples/Board_Init/basic_board_example.elf", 
-        "map" : f"{repo_root()}/tests/build/Release/Examples/Board_Init/basic_board_example.map" 
-        },
-    "RelWithDebInfo": {
-        "firmware" : f"{repo_root()}/tests/build/RelWithDebInfo/Examples/Board_Init/basic_board_example.elf", 
-        "map" : f"{repo_root()}/tests/build/RelWithDebInfo/Examples/Board_Init/basic_board_example.map" 
-        },
-    "MinSizeRel": {
-        "firmware" : f"{repo_root()}/tests/build/MinSizeRel/Examples/Board_Init/basic_board_example.elf", 
-        "map" : f"{repo_root()}/tests/build/MinSizeRel/Examples/Board_Init/basic_board_example.map" 
-    }
-}
+@pytest.fixture
+def build_dir(build_type, build_dir_base):
+    repo_helper = Repo_Helper.Repo_Helper(logfile=None)
+    build_dir = f"{build_dir_base}/{build_type}"
+    print(f"creating build in {build_dir}")
+    repo_helper.execute(f"mkdir -p {build_dir}")
+    return build_dir
 
 @pytest.fixture(scope="module")
-def firmware(build_type):
-    binary_file = binary_file_locations[build_type]["firmware"]
-    return binary_file
-
-@pytest.fixture(scope="module")
-def mapfile(build_type):
-    map_file = binary_file_locations[build_type]["map"]
-    return map_file
+def toolchain_file():
+    return "/home/developer/toolchain/arm-none-eabi-gcc.cmake"
 
 @pytest.fixture
-def build_dir(build_type):
-    build_dir = f"{repo_root()}/tests/build"
-    print(f"creating build in {build_dir}")
+def build_logfile(build_dir):
+    from repo_helper import Repo_Helper
+    repo_helper = Repo_Helper.Repo_Helper(logfile=None)
+    log_file = f"{build_dir}/build_log.txt"
+    repo_helper.execute(f"touch {log_file}")
+    return log_file
+
+@pytest.fixture(scope="session")
+def repo_root():
+    from repo_helper import Repo_Helper
+    repo_helper = Repo_Helper.Repo_Helper(logfile=None)
+    _, output = repo_helper.repo_root()
+    print(f"repo root is: {output}")
+    return output
+
+@pytest.fixture(scope="session")
+def serial_file(repo_root):
+    return f"{repo_root}/tty1"
+
+def configure(cmake_root_dir, build_dir, toolchain_file, build_type, log, install_prefix: str|None , build_logfile: str|None) -> int:
+    cmake_command = f"cmake -S {cmake_root_dir} -B {build_dir} -DCMAKE_BUILD_TYPE={build_type} -DCMAKE_TOOLCHAIN_FILE={toolchain_file} -DCMAKE_INSTALL_PREFIX={install_prefix if install_prefix != None else build_dir + '/install/'}"
+    helper = Repo_Helper.Repo_Helper(logfile=build_logfile)
+    result, _ = helper.execute(cmake_command, log=log, wait=True)
+    return result.returncode
+
+def make(build_dir, build_logfile: str|None, log) -> int:
+    make_command = f"make -C {build_dir}"
+    helper = Repo_Helper.Repo_Helper(logfile=build_logfile)
+    result, _ = helper.execute(make_command, log=log, wait=True)
+    return result.returncode
+
+def make_install(build_dir, build_logfile: str|None, log) -> int:
+    make_command = f"make -C {build_dir} install"
+    helper = Repo_Helper.Repo_Helper(logfile=build_logfile)
+    result, _ = helper.execute(make_command, log=log, wait=True)
+    return result.returncode
 
 def clean_directory(build_dir) -> int:
     try: 
-        result = subprocess.run([f"rm -rf {build_dir}"], shell=True)
+        helper = Repo_Helper.Repo_Helper(logfile=None)
+        result, output = helper.execute(f"rm -rf {build_dir}")
+        #result = subprocess.run([f"rm -rf {build_dir}"], shell=True)
         return result.returncode
     except FileNotFoundError as ex:
         print(f"build dir was not there: {ex}")
         return -1
 
-def log_directory(build_type: str):
-    log_dir = f"{repo_root()}/tests/log/{build_type}"
+def log_directory(build_type: str, repo_root):
+    log_dir = f"{repo_root}/tests/log/{build_type}"
     #make sure it exists
-    subprocess.run([f"mkdir -p {log_dir}"], shell=True)
+    #subprocess.run([f"mkdir -p {log_dir}"], shell=True)
+    helper = Repo_Helper.Repo_Helper(logfile=None)
+    _ = helper.execute(f"mkdir -p {log_dir}")
     return log_dir
 
-def create_build_dir() -> str:
-    build_dir = f"{repo_root()}/tests/build"
-    try: 
-        subprocess.run([f"mkdir -p {build_dir}"], shell=True)
-    except FileNotFoundError as ex:
-        print(f"could not create build directory: {ex}")
-        return ""
-    print(f"build_dir created in {build_dir}")
-    return build_dir
 
-def cmake_run(cmake_root_dir: str, build_dir: str, build_type: str, cmake_log_file: str|None) -> int:
-    logfile = None
-
-    if cmake_log_file != None:
-        logfile = open(cmake_log_file, "w")
-
-    result = subprocess.run(["cmake", "-S", cmake_root_dir,
-       "-B", build_dir,
-       "-DCMAKE_TOOLCHAIN_FILE=/home/developer/toolchain/arm-none-eabi-gcc.cmake",
-       f"-DCMAKE_BUILD_TYPE={build_type}"], check=True,
-       stdout=logfile, stderr=logfile
-       )
-    print(f"cmake result for {build_type}: {result.returncode}")
-    return result.returncode
-
-def make_run(build_type_directory: str, make_log_file: str|None) -> int:
-    logfile = None
-
-    if make_log_file != None:
-        logfile = open(make_log_file, "w")
-
-    result = subprocess.run(["make", "-C", build_type_directory], stdout=logfile, stderr=logfile)
-    print(f"make result for {build_type_directory}: {result.returncode}")
-    return result.returncode
-
-@pytest.fixture(scope="session", autouse=True)
-def compile(clean, log_to_file):
-    print("")
-    print(f"compile: {repo_root()}")
-    build_dir = create_build_dir()
-    if clean:
-        clean_directory(build_dir)
-    if build_dir == "":
-        print("could not create root build directory")
-        pytest.exit()
-    else:
-        print(f"Using build directory: {build_dir}")
-    build_durations = {}
-    for build in cmake_build_types:
-        build_dir_type =  f"{build_dir}/{build}"
-
-        cmake_log_file = None
-        make_log_file = None
-
-        if log_to_file == True:
-            cmake_log_file = f"{log_directory(build_type=build)}/cmake_output.txt"
-            make_log_file = f"{log_directory(build_type=build)}/make_output.txt"
-        subprocess.run(["mkdir", "-p", build_dir_type ], check=True)
-        start_time = datetime.datetime.now()
-        print("##################################################")
-        print(f"start compiling for {build} at {start_time}")
-        cmake_result = cmake_run(cmake_root_dir=repo_root(), build_dir=build_dir_type, build_type=build, cmake_log_file=cmake_log_file)
-
-        if cmake_result != 0:
-            print(f"cmake failed for: {build} with returncode: {cmake_result}")
-            pytest.exit()
-
-        make_result = make_run(build_type_directory=build_dir_type, make_log_file=make_log_file)
-        if make_result != 0:
-            print(f"make failed for: {build} with returncode: {cmake_result}")
-            pytest.exit()
-
-        end_time = datetime.datetime.now()
-        print(f"compilation finished for: {build} at {end_time}, duration: {end_time - start_time}")
-        build_durations[build] = end_time - start_time
-        print("##################################################")
-    
-    print("Build Time Summary:")
-    for k, v in build_durations.items():
-        print(f"duration for {k} : {v}")
-
-    print("##################################################")
-
-@pytest.fixture()
-def openocd_controller(firmware, mapfile, host):
+@pytest.fixture(scope="module")
+def openocd_controller(firmware, repo_root, host):
     from tcl_utils.tcl_control import OpenOCD_TCL
     tcl = OpenOCD_TCL(host=host, 
                     verbose=False, 
-                    elf_file=firmware, 
-                    mapfile=mapfile, 
-                    svd_file=os.path.join(repo_root(), "svd", "stm32f767.xml")
+                    elf_file=firmware[0], 
+                    mapfile=firmware[1], 
+                    svd_file=os.path.join(repo_root, "svd", "stm32f767.xml")
     )
     tcl.connect()
     yield tcl
 
     return
 
-@pytest.fixture(scope="module", autouse=True)
-def flash_binary_file(log_to_file, build_type, firmware):
-    command = f"gdb-multiarch -f {firmware}"
-    this_directory = os.path.dirname(__file__)
-    log_file = None
-    if log_to_file == True:
-        log_file = f"{log_directory(build_type)}/gdb-multiarch.txt"
-
-    print(f"gdb command: {command}")
-    print(f"firmware: {firmware}")
-    print(f"cwd: {this_directory}")
-    print(f"logfile: {log_file}")
-
-    log_file_desc = None
-    if log_file != None:
-        log_file_desc = open(log_file, "w")
-    result = subprocess.run(
-        command,
-        cwd=this_directory,
-        shell=True,
-        stdout=log_file_desc, stderr=log_file_desc
-    )
-    print(f"result from gdb: {result.returncode}")
-    return result.returncode
 
 @pytest.fixture()
-def serial_interface(build_type):
-    serial_logfile = f"{log_directory(build_type)}/uart_log.txt"
-    ser = SerialReaderWriter(logfile=serial_logfile, device=f"{repo_root()}/tty1")
+def serial_interface(build_type, repo_root, setup_serial_interface):
+    from repo_helper.Repo_Helper import Repo_Helper
+    helper = Repo_Helper()
+    _, output = helper.execute('pidof socat')
+    print(f"serial_interface: socat pid: {output}")
+    #serial_logfile is communication log
+    serial_logfile = f"{log_directory(build_type, repo_root)}/uart_log.txt"
+    ser = SerialReaderWriter(logfile=serial_logfile, device=setup_serial_interface)
     yield ser
     return
 
-@pytest.fixture(scope="session", autouse=True)
-def setup_serial_interface(host="dw-latitude-e6440", port=3002):
-    print(f"setting up serial interface for host: {host}:{port}")
+
+@pytest.fixture(scope="session")
+def setup_serial_interface(serial_file, host="dw-latitude-e6440", port=3002, socat_logfile="/home/developer/workspace/socat_log.txt", timeout=1):
+    '''
+    Fixture to set up a serial interface for testing.
+        socat_logfile is socat specific logfile, not serial log
+    '''
+    print(f"setup_serial_interface: connecting to host: {host}:{port}")
     from repo_helper.Repo_Helper import Repo_Helper
     helper = Repo_Helper()
-    result, output = helper.execute(command=f"socat PTY,link=/home/developer/workspace/tty1,raw,echo=0 tcp:{host}:{port}", wait=False)
-    yield None
+    
+    _, output = helper.execute('pidof socat')
+    if len(output) != 0:
+        #if we encounter a situation where socat is required multiple times,
+        #we will find a different solution. For now we kill´em all
+        print(f"found socat processes: {output}, killing them")
+        helper.execute("killall socat")    
+        
+    command=f"socat -dd PTY,link={serial_file},raw,echo=0 tcp:{host}:{port} > {socat_logfile} 2>&1"
+    print(f"command:")
+    print(command)
+    result, output = helper.execute(command=command, wait=False)
+    #some debugging:
+    _, output = helper.execute('pidof socat')
+    print(f"socat pid: {output}")
+    time.sleep(timeout)  # Wait a moment for socat to establish the connection
+    assert os.path.exists(serial_file), f"Serial file does not exist: {serial_file} after {timeout} seconds"
+    yield serial_file
     helper.execute(f"killall socat")
-    # if result.returncode == 0:
-    #     pid = output[0].split(" ")[1]
-    #     print(f"socat started successfully with pid: {pid}")    
-    # else:
-    #     print(f"Startup of socat to read serial failed with: {result.returncode}")
-    #     print(f"output: {output}")
+
+
+@pytest.fixture(scope="module")
+def compile_install_hal(self, toolchain_file, repo_root, build_type):
+    from conftest import configure, make, make_install
+    build_dir = f"{repo_root}/build/{build_type}"
+    result_code = configure(
+        cmake_root_dir=repo_root, 
+        build_dir=build_dir, 
+        toolchain_file=toolchain_file,
+        build_type=build_type, 
+        log=False, 
+        install_prefix="/home/developer/toolchain/", 
+        build_logfile=None)
+    
+    assert result_code == 0, f"cmake failed with: {result_code}"
+    result_code = make(build_dir, None, None)
+    assert result_code == 0, f"make failed with: {result_code}"
+    result_code = make_install(build_dir, None, None)
+    assert result_code == 0, f"make install failed with: {result_code}"

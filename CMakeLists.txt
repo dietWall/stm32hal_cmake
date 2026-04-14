@@ -107,15 +107,18 @@ target_compile_definitions(STM32F7xx_HAL_Driver
     PUBLIC USE_HAL_DRIVER
 )
 
+set(STM32F7xx_HAL_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/stm32f7_hal/Drivers/STM32F7xx_HAL_Driver/Inc")
+
 target_include_directories(STM32F7xx_HAL_Driver 
 PUBLIC
-    stm32f7_hal/Drivers/STM32F7xx_HAL_Driver/Inc
+    ${STM32F7xx_HAL_INCLUDE_DIR}
 )
 
 
 add_library(CMSISCore INTERFACE)
+set(CMSISCore_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/stm32f7_hal/Drivers/CMSIS/Core/Include")
 target_include_directories(CMSISCore INTERFACE
-    stm32f7_hal/Drivers/CMSIS/Core/Include
+    ${CMSISCore_INCLUDE_DIR}
 )
 
 add_library(STM32F7xx_CMSIS_Device STATIC
@@ -123,10 +126,14 @@ add_library(STM32F7xx_CMSIS_Device STATIC
     stm32f7_hal/Drivers/CMSIS/Device/ST/STM32F7xx/Source/Templates/system_stm32f7xx.c
 )
 
+set(STM32F7xx_CMSIS_Device_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/stm32f7_hal/Drivers/CMSIS/Device/ST/STM32F7xx/Include")
+
 target_compile_definitions(STM32F7xx_CMSIS_Device PUBLIC STM32F767xx)
 target_include_directories(STM32F7xx_CMSIS_Device PUBLIC
-     stm32f7_hal/Drivers/CMSIS/Device/ST/STM32F7xx/Include
+     ${STM32F7xx_CMSIS_Device_INCLUDE_DIR}
 )
+
+
 
 target_link_libraries(STM32F7xx_CMSIS_Device PUBLIC CMSISCore)
 set_target_properties(STM32F7xx_CMSIS_Device PROPERTIES
@@ -135,12 +142,6 @@ set_target_properties(STM32F7xx_CMSIS_Device PROPERTIES
 
 
 target_compile_options(STM32F7xx_CMSIS_Device
-# some of this settings are required for correct compilation of initialization code
-# I can´t tell yet, which of them are required and which are not
-# I guess -mcpu.. and -mfpu should be the same as in executable, 
-# otherwise mcu goes into HardFault because of illegal instruction
-# todo: reduce this instructions to a minimum, better: inherit this settings from executable cmake file
-# or maybe even better: provide this settings with MCU selection process
 PUBLIC "-ffunction-sections"
     PUBLIC "-fdata-sections"
     PUBLIC "-Wall"
@@ -155,15 +156,6 @@ PUBLIC "-ffunction-sections"
 
 
 target_link_options(STM32F7xx_CMSIS_Device
-# some of this settings are required for correct selection of the newlib(-nano)
-# if they are not passed, the cpu enters Hardfault before calling main function (because ld links wrong libraries)
-
-# I can´t tell yet, which of them are required and which are not
-# I guess -mcpu.. and -mfpu should be the same as in executable, 
-# otherwise mcu goes into HardFault because of illegal instruction
-
-#todo: same as in compile_definitions: provide a mcu specific cmake file? / Inherit from executable
-
 PUBLIC "-ffunction-sections"
     PUBLIC "-fdata-sections"
     PUBLIC "-Wall"
@@ -176,6 +168,37 @@ PUBLIC "-ffunction-sections"
     PUBLIC "-mfloat-abi=hard"
 )
 
+install(DIRECTORY ${STM32F7xx_HAL_INCLUDE_DIR}/ DESTINATION include/)
+install(TARGETS STM32F7xx_HAL_Driver DESTINATION lib/)
 
-add_subdirectory(Examples)
+install(DIRECTORY ${CMSISCore_INCLUDE_DIR}/ DESTINATION include/)
+install(TARGETS CMSISCore DESTINATION lib/)
 
+install(DIRECTORY ${STM32F7xx_CMSIS_Device_INCLUDE_DIR}/ DESTINATION include/)
+install(TARGETS STM32F7xx_CMSIS_Device DESTINATION lib/)
+
+install(TARGETS STM32F7xx_HAL_Driver 
+        EXPORT STM32F7xx_HAL_DriverTargets 
+        LIBRARY DESTINATION lib/cmake/STM32F7xx_HAL_Driver
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+        )
+
+install(TARGETS STM32F7xx_CMSIS_Device 
+        EXPORT STM32F7xx_CMSIS_DeviceTargets 
+        LIBRARY DESTINATION lib/cmake/STM32F7xx_CMSIS_Device
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+        )
+
+install(TARGETS CMSISCore 
+        EXPORT CMSISCoreTargets 
+        LIBRARY DESTINATION lib/cmake/CMSISCore
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+        )
+
+include(CPack)

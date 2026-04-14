@@ -1,0 +1,40 @@
+name: Release Package
+
+on:
+    workflow_dispatch:
+      inputs:
+        version:
+          description: 'Version to release'
+          required: true
+          default: '0.2.0'
+
+jobs:
+    build-and-test:
+        permissions: write-all
+        uses: ./.github/workflows/compile.yml
+        secrets: inherit
+
+    push:
+        permissions: write-all
+        runs-on: ubuntu-latest
+        needs: build-and-test
+        steps:
+
+        - uses: actions/checkout@v5 # do we really need this? artifact downloaded in next step
+          with: 
+            fetch-depth: 0
+
+        - name: Retrieve saved artifact #retrieve result from build-and-test job
+          uses: actions/download-artifact@v7
+          with:
+            name: hal-package
+
+        - name: list directory, show downloaded artifact
+          run: ls -la
+
+        - name: Push package to github releases page
+          uses: softprops/action-gh-release@v1
+          with:
+            tag_name: ${{ github.event.inputs.version }}
+            files: STM32F7_HAL_*.tar.gz
+            token: ${{ secrets.GITHUB_TOKEN }}
