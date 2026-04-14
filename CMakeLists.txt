@@ -201,4 +201,4 @@ install(TARGETS CMSISCore
         INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
         )
 
-
+include(CPack)
