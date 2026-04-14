@@ -10,6 +10,7 @@ on:
 
 jobs:
   build:
+    runs-on: ubuntu-latest
     container: ghcr.io/dietwall/arm_gcc_image:0.0.2
 
     steps:
