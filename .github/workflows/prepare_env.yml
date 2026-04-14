@@ -2,10 +2,14 @@ name: Prepare Environment
 
 on:
   workflow_call:
+    inputs:
+      runner:
+        type: string
+        default: ubuntu-latest
 
 jobs:
-  build:
-    runs-on: self-hosted
+  setup_container:
+    runs-on: ${{ inputs.runner }}
 
     steps:
     - uses: actions/checkout@v6
