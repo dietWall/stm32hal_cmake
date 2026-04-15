@@ -23,5 +23,8 @@ jobs:
 
     - name: setup ansible environment
       run: ./repo_config/setup_env.sh
+
+    - name: Download dependencies
+      run: ./repo_config/download.sh
     
   
