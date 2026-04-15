@@ -32,7 +32,7 @@ jobs:
         REPO_HELPER_TOKEN: ${{ secrets.REPO_HELPER_TOKEN }}
     
     - name: Setup Container
-      run: source repo_config/.venv_installation/bin/activate && ansible-playbook -c local $REPO_ROOT/repo_config/ansible/setup_container.yml
+      run: source repo_config/.venv_installation/bin/activate && ansible-playbook -c local repo_config/ansible/setup_container.yml
 
     
   
