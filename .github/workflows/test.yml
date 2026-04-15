@@ -1,0 +1,23 @@
+name: Test Compilation
+
+on:
+  push:
+
+jobs:
+    prepare:
+        uses: ./.github/workflows/prepare.yml
+        secrets: inherit
+        
+    compile:
+        runs-on: self-hosted
+        needs: prepare
+
+        steps:
+        - name: Checkout code
+          uses: actions/checkout@v5
+        
+        - name: Hello world
+          run: echo "Hello world, this is the compile job"
+        
+        - name: check container 
+          run: docker container ls -a
