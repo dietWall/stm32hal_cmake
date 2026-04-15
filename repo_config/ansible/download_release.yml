@@ -6,10 +6,6 @@
     package_dir: "{{ playbook_dir }}/tmp_install/"
   
   tasks:
-    # - name: Install required packages
-    #   ansible.builtin.apt:
-    #     name: [unzip]
-    #     state: present
 
     - name: Create download directory
       ansible.builtin.file:
@@ -27,6 +23,11 @@
       ansible.builtin.include_vars:
         file: "{{ json_file }}"
         name: package_config
+    
+    - name: print token 
+      ansible.builtin.debug:
+        msg: "Token not set!!! Setup will fail"
+      when: package_config.token_name == 'None'
 
 #######################
 # Start Download 
