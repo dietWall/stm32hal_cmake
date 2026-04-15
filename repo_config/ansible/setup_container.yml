@@ -7,6 +7,7 @@
     workspace_dir: /home/developer/workspace
     packages_dir: "{{ workspace_dir }}/repo_config/ansible/tmp_install"
     virtualenv: "{{ workspace_dir }}/.venv_container"
+    image: ghcr.io/dietwall/arm_gcc_image:latest
   tasks:
 
     - name: Set Repo_root for Mount
@@ -19,7 +20,7 @@
         command: bash
         detach: true
         interactive: true
-        image: stm32
+        image: "{{ image }}"
         name: "{{ container_name }}"
         output_logs: true
         state: started
@@ -42,23 +43,3 @@
       community.docker.docker_container_exec:
         container: "{{ container_name }}"
         command: bash -c "source {{ virtualenv }}/bin/activate && pip install {{ packages_dir }}/*"
-  #######
-  # Container is running: Test, Compile
-  #######
-    # - name: Run HAL Compilation Tests
-    #   community.docker.docker_container_exec:
-    #     container: "{{ container_name }}"
-    #     command: bash -c "source {{ virtualenv }}/bin/activate && pytest -s -v {{ workspace_dir }}/tests/test_hal_build.py --junit-xml=test_results_hal.xml"
-    #     chdir: "{{ workspace_dir }}"
-
-    # - name: Run Example Compilation Tests
-    #   community.docker.docker_container_exec:
-    #     container: "{{ container_name }}"
-    #     command: bash -c "source {{ virtualenv }}/bin/activate && pytest -s -v {{ workspace_dir }}/tests/test_compile_examples.py --junit-xml=test_results_examples.xml"
-    #     chdir: "{{ workspace_dir }}"
-        
-
-    # - name: Stop & Remove Container
-    #   community.docker.docker_container:
-    #     name: "{{ container_name }}"
-    #     state: absent
