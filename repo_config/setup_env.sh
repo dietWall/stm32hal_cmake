@@ -1,7 +1,9 @@
 #! /usr/bin/env bash
 
 REPO_ROOT=$(git rev-parse --show-toplevel)
-
+#explicitly pass tokens to ansible
+export TCL_UTILS_TOKEN
+export REPO_HELPER_TOKEN
 
 #prepare environment for installation
 python3 -m venv $REPO_ROOT/repo_config/.venv_installation
