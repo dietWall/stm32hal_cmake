@@ -16,7 +16,7 @@ jobs:
     steps:
   
     - name: Login to GitHub Container Registry
-      run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+      run: echo "${{ secrets.GHCR_LOGIN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
     
     - name: Pull Image
       run: docker pull ghcr.io/dietwall/arm_gcc_image:0.0.2
