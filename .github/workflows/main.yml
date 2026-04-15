@@ -14,9 +14,11 @@ jobs:
       contents: read
 
     steps:
-  
-    - name: Login to GitHub Container Registry
-      run: echo "${{ secrets.GHCR_LOGIN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+    - name: Checkout code
+      uses: actions/checkout@v5
+
+    # - name: Login to GitHub Container Registry
+    #   run: echo "${{ secrets.GHCR_LOGIN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
     
     - name: Pull Image
-      run: docker pull ghcr.io/dietwall/arm_gcc_image:0.0.2
+      run: docker pull ghcr.io/dietwall/arm_gcc_image:latest
