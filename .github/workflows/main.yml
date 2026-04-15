@@ -18,4 +18,4 @@ jobs:
         password: ${{ secrets.GITHUB_TOKEN }}
     
     - name: Pull Image
-      run: docker pull hcr.io/dietwall/arm_gcc_image:latest
+      run: docker pull ghcr.io/dietwall/arm_gcc_image:latest
