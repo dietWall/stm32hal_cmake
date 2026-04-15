@@ -7,7 +7,8 @@ on:
   workflow_call:
 
 jobs:
-  login:
+  get_dependencies:
+
     runs-on: self-hosted
     permissions: 
       packages: read
@@ -16,9 +17,11 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v5
-
-    # - name: Login to GitHub Container Registry
-    #   run: echo "${{ secrets.GHCR_LOGIN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
     
     - name: Pull Image
       run: docker pull ghcr.io/dietwall/arm_gcc_image:latest
+
+    - name: setup ansible environment
+      run: ./repo_config/setup_env.sh
+    
+  
