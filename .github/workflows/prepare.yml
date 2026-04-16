@@ -1,9 +1,6 @@
 name: Compile Tests
 
 on:
-  push:
-  pull_request:
-    branches: [ "master" ]
   workflow_call:
 
 jobs:
@@ -34,5 +31,4 @@ jobs:
     - name: Setup Container 
       run: source repo_config/.venv_installation/bin/activate && ansible-playbook -c local repo_config/ansible/setup_container.yml
 
-    
   
