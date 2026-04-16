@@ -5,6 +5,7 @@
   vars:
     container_name: stm32hal
     workspace_dir: /home/developer/workspace
+    virtualenv: "{{ workspace_dir }}/.venv_container"
   tasks:
 
     - name: Run HAL Compilation Tests
