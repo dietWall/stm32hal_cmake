@@ -20,8 +20,11 @@ jobs:
           run: docker container ls -a
         
         - name: run pytest
-          run: source repo_config/.venv_installation/bin/activate && ansible-playbook -c local repo_config/ansible/run_tests.yml
-        
+          run: docker exec -it stm32hal "bash -c "source .venv_container/bin/activate && pytest -s -v {{ workspace_dir }}/tests/test_hal_build.py --junit-xml=test_results_hal.xml"
+
+        - name: run pytest
+          run: docker exec -it stm32hal "bash -c "source .venv_container/bin/activate && pytest -s -v {{ workspace_dir }}/tests/test_compile_examples.py --junit-xml=test_results_examples.xml"
+
         - name: Publish Test Results
           uses: EnricoMi/publish-unit-test-result-action/linux@v2
           if: (!cancelled())
