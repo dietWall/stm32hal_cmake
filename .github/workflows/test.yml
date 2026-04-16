@@ -16,8 +16,15 @@ jobs:
         - name: Checkout code
           uses: actions/checkout@v5
         
-        - name: Hello world
-          run: echo "Hello world, this is the compile job"
-        
         - name: check container 
           run: docker container ls -a
+        
+        - name: run pytest
+          run: source repo_config/.venv_installation/bin/activate && ansible-playbook -c local repo_config/ansible/run_tests.yml
+        
+        - name: Publish Test Results
+          uses: EnricoMi/publish-unit-test-result-action/linux@v2
+          if: (!cancelled())
+          with:
+            files:  |
+                test_results*.xml
