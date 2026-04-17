@@ -2,15 +2,48 @@ name: Test Compilation
 
 on:
   push:
+  workflow_call:
 
-jobs:
-    # prepare:
-    #     uses: ./.github/workflows/prepare.yml
-    #     secrets: inherit
-        
-    compile:
+jobs:  
+    test:
         runs-on: self-hosted
-        #needs: prepare
+        steps:
+        - name: Checkout code
+          uses: actions/checkout@v5
+        
+        - name: Download repo_helper
+          run: ./repo_config/download_release.sh -r dietwall/repo_helper
+          env:
+            TOKEN: ${{ secrets.REPO_HELPER_TOKEN }}
+
+        - name: Download tcl_utils
+          run: ./repo_config/download_release.sh -r dietwall/openocd-tcl-controller
+          env:
+            TOKEN: ${{ secrets.TCL_UTILS_TOKEN }}
+        
+        # we might do this with a standard dockerfile, or with repo_ops.py
+        # - name: Setup Container 
+        #   run: source repo_config/.venv_installation/bin/activate && ansible-playbook -c local repo_config/ansible/setup_container.yml
+
+        # - name: check container 
+        #   run: docker container ls -a
+
+        # - name: check venv
+        #   run: ls -la 
+
+        #- name: run tests
+        #  run: source repo_config/.venv_installation/bin/activate && ansible-playbook -c local repo_config/ansible/run_tests.yml
+
+        #- name: Publish Test Results
+          # uses: EnricoMi/publish-unit-test-result-action/linux@v2
+          # if: (!cancelled())
+          # with:
+          #   files:  |
+          #       test_results*.xml
+        
+    build:
+        runs-on: self-hosted
+        needs: test
         steps:
         - name: Checkout code
           uses: actions/checkout@v5
@@ -25,27 +58,12 @@ jobs:
             REPO_HELPER_TOKEN: ${{ secrets.REPO_HELPER_TOKEN }}
         
         # we might do this with a standard dockerfile, or with repo_ops.py
-        - name: Setup Container 
-          run: source repo_config/.venv_installation/bin/activate && ansible-playbook -c local repo_config/ansible/setup_container.yml
+        #- name: Setup Container 
+        #  run: source repo_config/.venv_installation/bin/activate && ansible-playbook -c local repo_config/ansible/setup_container.yml
 
         - name: check container 
           run: docker container ls -a
 
         - name: check venv
-          run: ls -la 
-
-        - name: run tests
-          run: source repo_config/.venv_installation/bin/activate && ansible-playbook -c local repo_config/ansible/run_tests.yml
-
-        # - name: run pytest
-        #   run: docker exec -it stm32hal "bash -c source .venv_container/bin/activate && pytest -s -v tests/test_hal_build.py --junit-xml=test_results_hal.xml"
-        
-        # - name: run pytest
-        #   run: docker exec -it stm32hal "bash -c source .venv_container/bin/activate && pytest -s -v tests/test_compile_examples.py --junit-xml=test_results_examples.xml"
-
-        - name: Publish Test Results
-          uses: EnricoMi/publish-unit-test-result-action/linux@v2
-          if: (!cancelled())
-          with:
-            files:  |
-                test_results*.xml
+          run: ls -la
+  
