@@ -62,7 +62,6 @@ if [ "$VERSION" = "latest" ]; then
 else
   #i hade to use jqs --arg to avoid quotes escaping hell here:
   asset_id=$(echo $release_data | jq --arg ver "$VERSION" ' . | map(select(.tag_name==$ver ))[0].assets[0].id ')
-  echo "asset id found: $asset_id"
   file_parser=' . | map(select(.tag_name==$ver ))[0].assets[0].name '
   # check if file was set from outside, if not, get the original filename:
   if [ -z $FILE ]; then
@@ -77,7 +76,7 @@ fi;
 
 echo Starting Download:
 echo "asset_id = $asset_id"
-echo "file=$FILE"
+echo "saving under: $DOWNLOAD_DIR/$FILE"
 
 if [ ! -d $DOWNLOAD_DIR ]; then
   mkdir -p $DOWNLOAD_DIR
