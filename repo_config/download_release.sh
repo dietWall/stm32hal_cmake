@@ -1,32 +1,14 @@
 #! /usr/bin/env bash
-#
-# gh-dl-release! It works!
-# 
-# This script downloads an asset from latest or specific Github release of a
-# private repo. Feel free to extract more of the variables into command line
-# parameters.
-#
-# PREREQUISITES
-#
-# curl, wget, jq
-#
-# USAGE
-#
-# Set all the variables inside the script, make sure you chmod +x it, then
-# to download specific version to my_app.tar.gz:
-#
-#     gh-dl-release 2.1.1 my_app.tar.gz
-#
-# to download latest version:
-#
-#     gh-dl-release latest latest.tar.gz
-#
-# If your version/tag doesn't match, the script will exit with error.
 
-#TOKEN="<github_access_token>"
+# this script downloads a release from a private repo to a designated directory
+# prerequisites: jq, wget, curl
+# at invocation you have to provide a github repo in form: -r <organization>/repo_name
+# Additionally, either you set -t <TOKEN> at invocation or do something like export TOKEN=<your_github_access_token>
+
+# kudos to maxim/gh-dl-release 
+# https://gist.github.com/maxim/6e15aa45ba010ab030c4
 
 DOWNLOAD_DIR=$(pwd)/repo_config/tmp_download    #this is adapted to this repo, change at will if reusing
-#REPO="dietwall/openocd-tcl-controller"          #this should be mandatory actually
 VERSION="latest"                                # tag name or the word "latest", tag is a git tag created at release
 GITHUB="https://api.github.com"
 
@@ -63,7 +45,6 @@ function gh_curl() {
 }
 
 release_data=`gh_curl -s $GITHUB/repos/$REPO/releases`
-echo $release_data > release.json
 
 
 if [ "$VERSION" = "latest" ]; then
