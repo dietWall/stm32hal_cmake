@@ -1,7 +1,0 @@
-{
-    "package" : "repo_helper",
-    "organization" : "dietWall",
-    "repository" : "repo_helper",
-    "token_name" : "REPO_HELPER_TOKEN",
-    "filename_extensions": [".whl", ".tar.gz"]
-}
