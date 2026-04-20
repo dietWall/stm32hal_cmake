@@ -20,7 +20,7 @@ jobs:
           run: docker pull ghcr.io/dietwall/arm_gcc_image:latest
 
         - name: create container
-          run: ./repo_ops.py --operation start_container
+          run: source repo_config/.venv_host/bin/activate && ./repo_ops.py --operation start_container
 
 
         #- name: Publish Test Results
