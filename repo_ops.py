@@ -24,6 +24,11 @@ def create_container_env(container_name: str = default_container_name):
         print(f"Downloaded release successfully")
 
 def start_container(container_name: str = default_container_name):
+    '''
+    This function assumes:
+    that the image is already built, 
+    Wheel Package has been downloaded (and eventually extracted from zip/tar.gz) to repo_config/tmp_download
+    '''
     helper = Repo_Helper()
     _, repo_root = helper.repo_root()
     print(f"starting container: {container_name}")
