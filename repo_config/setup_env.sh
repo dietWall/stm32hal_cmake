@@ -31,6 +31,7 @@ pip3 install $repo_root/repo_config/tmp_download/repo_helper-*.whl
 #cleanup:
 rm -rf $repo_root/repo_config/tmp_download/*
 
+
 echo "Dev Environment setup complete"
 echo "activate environment with:" 
 echo "source $venv_dir/bin/activate"
