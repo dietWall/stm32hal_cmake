@@ -1,6 +1,8 @@
 #! /usr/bin/env python3
 
 
+import os
+
 from repo_helper.Repo_Helper import Repo_Helper
 import argparse
 
@@ -13,8 +15,15 @@ test_venv = ".venv"
 def create_container_env(container_name: str = default_container_name):
     helper = Repo_Helper()
     _, repo_root = helper.repo_root()
-    command = f"source {MOUNT}/repo_config/.env_container && \
-        {MOUNT}/repo_config/download_release.sh -r dietwall/openocd-tcl-controller -o {MOUNT}/repo_config/tmp_download"
+    #.env_container is my local environment, in ci it is provided from secrets
+    
+    command = f"{MOUNT}/repo_config/download_release.sh -r dietwall/openocd-tcl-controller -o {MOUNT}/repo_config/tmp_download"
+    
+    if os.path.exists(f"{repo_root}/repo_config/.env_container"):
+        print(f"Error: .env file, sourcing it for download")
+        command = f"source {MOUNT}/repo_config/.env_container && \
+            {MOUNT}/repo_config/download_release.sh -r dietwall/openocd-tcl-controller -o {MOUNT}/repo_config/tmp_download"
+    
     result, output = helper.exec_in_container(command=command, container_name=container_name)
     if result != 0:
         print(f"Error: {result}")
