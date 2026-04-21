@@ -26,9 +26,10 @@ class TestCompileExamples:
     @pytest.mark.parametrize("app_dir", ["Examples/Board_Init", "Examples/simple_main"])
     def test_compile_example(self, compile_install_hal, app_dir, toolchain_file, build_type):
         from conftest import configure, make
+        build_dir=f"build/{app_dir}/{build_type}"
         result = configure(
             cmake_root_dir=app_dir,
-            build_dir=f"{app_dir}/build",
+            build_dir=build_dir,
             toolchain_file=toolchain_file,
             build_type=build_type,
             log=True,
@@ -36,6 +37,6 @@ class TestCompileExamples:
             build_logfile=None
         )
         assert result == 0, f"cmake for {app_dir} failed with: {result}"
-        result = make(f"{app_dir}/build", None, True)
+        result = make(build_dir, None, True)
         assert result == 0, f"make for {app_dir} failed with: {result}"
 
