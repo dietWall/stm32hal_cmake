@@ -15,7 +15,6 @@ def create_container_env(container_name: str = default_container_name):
     _, repo_root = helper.repo_root()
     command = f"source {MOUNT}/repo_config/.env_container && \
         {MOUNT}/repo_config/download_release.sh -r dietwall/openocd-tcl-controller -o {MOUNT}/repo_config/tmp_download"
-    
     result, output = helper.exec_in_container(command=command, container_name=container_name)
     if result != 0:
         print(f"Error: {result}")
@@ -51,11 +50,13 @@ def start_container(container_name: str = default_container_name):
     
     print(f"setting up container environment")
     create_container_env(container_name)
-    helper.create_venv_in_container(container_name=container_name, venv_dir=f"{MOUNT}/{test_venv}")
+    test_env_path = f"{MOUNT}/{test_venv}"
+    print(f"creating venv in container: {test_env_path}")
+    helper.create_venv_in_container(container_name=container_name, venv_dir=test_env_path)
     print(f"Installing requirements from {MOUNT}/requirements.txt")
-    helper.exec_in_container_venv(command=f"pip install -r {MOUNT}/requirements.txt", container_name = container_name, venv_path=f"{MOUNT}/{test_venv}")
+    helper.exec_in_container_venv(command=f"pip install -r {MOUNT}/requirements.txt", container_name = container_name, venv_path=test_env_path)
     print(f"Installing downloaded dependencies")
-    helper.exec_in_container_venv(command=f"pip install {MOUNT}/repo_config/tmp_download/*.whl", container_name = container_name, venv_path=f"{MOUNT}/{test_venv}")
+    helper.exec_in_container_venv(command=f"pip install {MOUNT}/repo_config/tmp_download/*.whl", container_name = container_name, venv_path=test_env_path)
 
 def build_image(image_name: str = image):
     print(f"re-building image: {image_name}")
@@ -85,6 +86,7 @@ def exec_in_container(command, container_name: str = default_container_name):
 
 def exec_in_test_environment(command, container_name: str = default_container_name):
     helper = Repo_Helper()
+    print(f"running command: {command}")
     result, output = helper.exec_in_container_venv(command, container_name, f"{MOUNT}/{test_venv}")
     if result.returncode != 0:
         print(f"Error: {result.returncode}")
