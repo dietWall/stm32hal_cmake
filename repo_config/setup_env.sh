@@ -29,7 +29,7 @@ $repo_root/repo_config/download_release.sh -r dietwall/repo_helper -o $repo_root
 #install private repo_helper in venv_host
 pip3 install $repo_root/repo_config/tmp_download/repo_helper-*.whl
 #cleanup:
-rm -rf $repo_root/repo_config/tmp_download/*
+#rm -rf $repo_root/repo_config/tmp_download/*
 
 
 echo "Dev Environment setup complete"
