@@ -15,14 +15,14 @@ jobs:
           run: ./repo_config/setup_env.sh
           env: 
             TOKEN: ${{ secrets.REPO_HELPER_TOKEN }}
-        
-        - name: setup host environment
-          run: ./repo_config/setup_env.sh
-          env: 
-            TOKEN: ${{ secrets.TCL_UTILS_TOKEN }}
-        
+              
         - name: Pull Image
           run: docker pull ghcr.io/dietwall/arm_gcc_image:latest
+
+        - name: Download Container dependencies
+          run: ./repo_config/download_release.sh -r dietwall/openocd-tcl-controller -o repo_config/tmp_download
+          env: 
+            TOKEN: ${{ secrets.TCL_UTILS_TOKEN }}
 
         - name: create container
           run: source repo_config/.venv_host/bin/activate && ./repo_ops.py --operation start_container
