@@ -139,15 +139,15 @@ def main():
             exec_in_container(command)
         
         if "test_hal_compilation" in args.operation[0]:
-            command = f"pytest -s -v {MOUNT}/tests/test_hal_build.py --junit-xml={MOUNT}/test_results/test_hal_build.xml"
+            command = f"pytest -s -v {MOUNT}/tests/test_hal_build.py --junit-xml={MOUNT}/test_hal_build.xml"
             exec_in_test_environment(command)
         
         if "test_example_compilation" in args.operation[0]:
-            command = f"pytest -s -v {MOUNT}/tests/test_compile_examples.py --junit-xml={MOUNT}/test_results/test_compile_examples.xml"
+            command = f"pytest -s -v {MOUNT}/tests/test_compile_examples.py --junit-xml={MOUNT}/test_compile_examples.xml"
             exec_in_test_environment(command)
         
         if "test_connection" in args.operation[0]:
-            command = f"pytest -s -v tests/test_connection.py"
+            command = f"pytest -s -v {MOUNT}/tests/test_connection.py --junit-xml={MOUNT}/test_connection.xml"
             exec_in_test_environment(command)
     
     if args.stop == True:
