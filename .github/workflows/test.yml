@@ -30,6 +30,16 @@ jobs:
         - name: run hal_compilation_test
           run: source repo_config/.venv_host/bin/activate && ./repo_ops.py --operation test_hal_compilation
 
+        - name: run example_compilation_test
+          run: source repo_config/.venv_host/bin/activate && ./repo_ops.py --operation test_example_compilation
+        
+        - name: Publish Test Results
+          uses: EnricoMi/publish-unit-test-result-action/linux@v2
+          if: (!cancelled())
+          with:
+            files:  |
+                test_results*.xml
+                
     cleanup:
         runs-on: self-hosted
         needs: test
@@ -38,11 +48,6 @@ jobs:
         - name: cleanup environment
           run: source repo_config/.venv_host/bin/activate && ./repo_ops.py --operation clean    
 
-        #- name: Publish Test Results
-          # uses: EnricoMi/publish-unit-test-result-action/linux@v2
-          # if: (!cancelled())
-          # with:
-          #   files:  |
-          #       test_results*.xml
+
         
   
