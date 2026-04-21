@@ -51,11 +51,11 @@ def start_container(container_name: str = default_container_name):
     
     print(f"setting up container environment")
     create_container_env(container_name)
-    helper.create_venv_in_container(container_name=container_name, venv_dir=test_venv)
+    helper.create_venv_in_container(container_name=container_name, venv_dir=f"{MOUNT}/{test_venv}")
     print(f"Installing requirements from {MOUNT}/requirements.txt")
-    helper.exec_in_container_venv(command=f"pip install -r {MOUNT}/requirements.txt", container_name = container_name, venv_path=test_venv)
+    helper.exec_in_container_venv(command=f"pip install -r {MOUNT}/requirements.txt", container_name = container_name, venv_path=f"{MOUNT}/{test_venv}")
     print(f"Installing downloaded dependencies")
-    helper.exec_in_container_venv(command=f"pip install {MOUNT}/repo_config/tmp_download/*.whl", container_name = container_name, venv_path=test_venv)
+    helper.exec_in_container_venv(command=f"pip install {MOUNT}/repo_config/tmp_download/*.whl", container_name = container_name, venv_path=f"{MOUNT}/{test_venv}")
 
 def build_image(image_name: str = image):
     print(f"re-building image: {image_name}")
@@ -85,7 +85,7 @@ def exec_in_container(command, container_name: str = default_container_name):
 
 def exec_in_test_environment(command, container_name: str = default_container_name):
     helper = Repo_Helper()
-    result, output = helper.exec_in_container_venv(command, container_name, test_venv)
+    result, output = helper.exec_in_container_venv(command, container_name, f"{MOUNT}/{test_venv}")
     if result.returncode != 0:
         print(f"Error: {result.returncode}")
         for l in output: print(l.strip())
@@ -111,7 +111,7 @@ def main():
             helper.execute(f"docker stop {args.container}")
             #make sure it is removed, even if -rm is given
             helper.execute(f"docker rm {args.container}")
-            for dir in ["build", test_venv, ".venv"]:
+            for dir in ["build", f"{MOUNT}/{test_venv}", ".venv"]:
                 print(f"removing {repo_root}/{dir}")
                 helper.execute(f"rm -rf {repo_root}/{dir}")
 
@@ -128,7 +128,7 @@ def main():
             exec_in_container(command)
         
         if "test_hal_compilation" in args.operation[0]:
-            command = f"pytest -s -v tests/test_hal_build.py"
+            command = f"pytest -s -v {MOUNT}/tests/test_hal_build.py"
             exec_in_test_environment(command)
         
         if "test_example_compilation" in args.operation[0]:
