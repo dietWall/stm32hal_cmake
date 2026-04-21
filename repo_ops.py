@@ -58,7 +58,7 @@ def start_container(container_name: str = default_container_name):
         print(f"to work with it")
     
     print(f"setting up container environment")
-    create_container_env(container_name)
+    #create_container_env(container_name) # moved to ci
     test_env_path = f"{MOUNT}/{test_venv}"
     print(f"creating venv in container: {test_env_path}")
     helper.create_venv_in_container(container_name=container_name, venv_dir=test_env_path)
