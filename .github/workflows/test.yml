@@ -25,7 +25,13 @@ jobs:
         - name: run hal_compilation_test
           run: source repo_config/.venv_host/bin/activate && ./repo_ops.py --operation test_hal_compilation
 
-        
+    cleanup:
+        runs-on: self-hosted
+        needs: test
+        if: always() # make sure it runs even if the test job fails or is cancelled
+        steps:
+        - name: cleanup environment
+          run: source repo_config/.venv_host/bin/activate && ./repo_ops.py --operation clean    
 
         #- name: Publish Test Results
           # uses: EnricoMi/publish-unit-test-result-action/linux@v2
