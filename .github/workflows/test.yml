@@ -21,7 +21,11 @@ jobs:
 
         - name: create container
           run: source repo_config/.venv_host/bin/activate && ./repo_ops.py --operation start_container
+        
+        - name: run hal_compilation_test
+          run: source repo_config/.venv_host/bin/activate && ./repo_ops.py --operation test_hal_compilation
 
+        
 
         #- name: Publish Test Results
           # uses: EnricoMi/publish-unit-test-result-action/linux@v2
