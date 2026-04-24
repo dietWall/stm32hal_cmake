@@ -16,7 +16,6 @@ def create_container_env(container_name: str = default_container_name):
     helper = Repo_Helper()
     _, repo_root = helper.repo_root()
     #.env_container is my local environment, in ci it is provided from secrets
-    
     command = f"{MOUNT}/repo_config/download_release.sh -r dietwall/openocd-tcl-controller -o {MOUNT}/repo_config/tmp_download"
     
     if os.path.exists(f"{repo_root}/repo_config/.env_container"):
@@ -144,10 +143,6 @@ def main():
         
         if "test_example_compilation" in args.operation[0]:
             command = f"pytest -s -v {MOUNT}/tests/test_compile_examples.py --junit-xml={MOUNT}/test_results_compile_examples.xml"
-            exec_in_test_environment(command)
-        
-        if "test_connection" in args.operation[0]:
-            command = f"pytest -s -v {MOUNT}/tests/test_connection.py --junit-xml={MOUNT}/test_connection.xml"
             exec_in_test_environment(command)
     
     if args.stop == True:

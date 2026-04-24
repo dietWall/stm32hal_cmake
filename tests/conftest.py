@@ -5,6 +5,7 @@ import datetime
 import time
 
 from tcl_utils.serial_monitor import SerialReaderWriter
+from tcl_utils.tcl_control import OpenOCD_TCL
 from repo_helper import Repo_Helper
 
 
@@ -112,7 +113,6 @@ def log_directory(build_type: str, repo_root):
 
 @pytest.fixture(scope="module")
 def openocd_controller(firmware, repo_root, host):
-    from tcl_utils.tcl_control import OpenOCD_TCL
     print(f"Creating OpenOCD controller: {firmware[0]}, {firmware[1]}")
     tcl = OpenOCD_TCL(host=host, 
                     verbose=True, 
@@ -135,6 +135,7 @@ def serial_interface(build_type, repo_root, setup_serial_interface):
     #serial_logfile is communication log
     serial_logfile = f"{log_directory(build_type, repo_root)}/uart_log.txt"
     ser = SerialReaderWriter(logfile=serial_logfile, device=setup_serial_interface)
+    ser.reset_input_buffer()
     yield ser
     return
 
@@ -195,6 +196,7 @@ def install_hal(make_hal, log, build_logfile):
 def compile_install_hal(self, toolchain_file, repo_root, build_type):
     from conftest import configure, make, make_install
     build_dir = f"{repo_root}/build/hal/{build_type}"
+    print(f"building and installing hal in {build_dir}")
     result_code = configure(
         cmake_root_dir=repo_root, 
         build_dir=build_dir, 
