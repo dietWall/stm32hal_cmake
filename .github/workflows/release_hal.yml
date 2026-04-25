@@ -44,4 +44,10 @@ jobs:
           with:
             name: TAR
             path: STM32F7_HAL*.tar.gz
-
+        
+        - name: Publish Release
+          uses: softprops/action-gh-release@v3
+          with:
+            files: STM32F7_HAL*.tar.gz
+            tag_name: v${{ github.event.inputs.version }}
+            token: ${{ secrets.GITHUB_TOKEN }}
