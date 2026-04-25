@@ -9,32 +9,39 @@ on:
           default: '0.2.0'
 
 jobs:
-    build-and-test:
+    test:
         permissions: write-all
-        uses: ./.github/workflows/compile.yml
+        uses: ./.github/workflows/test.yml
         secrets: inherit
-
-    push:
+    
+    build:
         permissions: write-all
-        runs-on: ubuntu-latest
-        needs: build-and-test
+        runs-on: self-hosted
+        needs: test
         steps:
+        - name: Checkout code
+          uses: actions/checkout@v5
 
-        - uses: actions/checkout@v5 # do we really need this? artifact downloaded in next step
-          with: 
-            fetch-depth: 0
+        - name: setup host environment
+          run: ./repo_config/setup_env.sh
+          env: 
+            TOKEN: ${{ secrets.REPO_HELPER_TOKEN }}
+        
+        - name: create container
+          run: source repo_config/.venv_host/bin/activate && ./repo_ops.py --operation start_container
 
-        - name: Retrieve saved artifact #retrieve result from build-and-test job
-          uses: actions/download-artifact@v7
+        - name: configure hal package
+          run: source repo_config/.venv_host/bin/activate && ./repo_ops.py --operation configure
+        
+        - name: build hal package
+          run: source repo_config/.venv_host/bin/activate && ./repo_ops.py --operation build
+        
+        - name: package hal
+          run: source repo_config/.venv_host/bin/activate && ./repo_ops.py --operation package
+
+        - name: Upload package as artifact
+          uses: actions/upload-artifact@v3
           with:
-            name: hal-package
+            name: TAR
+            path: STM32F7_HAL*.tar.gz
 
-        - name: list directory, show downloaded artifact
-          run: ls -la
-
-        - name: Push package to github releases page
-          uses: softprops/action-gh-release@v1
-          with:
-            tag_name: ${{ github.event.inputs.version }}
-            files: STM32F7_HAL_*.tar.gz
-            token: ${{ secrets.GITHUB_TOKEN }}
