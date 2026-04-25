@@ -28,13 +28,9 @@ fi;
 $repo_root/repo_config/download_release.sh -r dietwall/repo_helper -o $repo_root/repo_config/tmp_download
 #install private repo_helper in venv_host
 pip3 install $repo_root/repo_config/tmp_download/repo_helper-*.whl
-#cleanup:
-#rm -rf $repo_root/repo_config/tmp_download/*
 
-
-echo "Dev Environment setup complete"
-echo "activate environment with:" 
+echo "Dev Environment setup complete, activate with:"
 echo "source $venv_dir/bin/activate"
-echo "run repo_ops.py to proceed:"
+echo "run repo_ops.py afterwards to proceed:"
 echo "$repo_root/repo_ops.py --help"
 
