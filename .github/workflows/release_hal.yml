@@ -40,7 +40,7 @@ jobs:
           run: source repo_config/.venv_host/bin/activate && ./repo_ops.py --operation package
 
         - name: Upload package as artifact
-          uses: actions/upload-artifact@v3
+          uses: actions/upload-artifact@v7
           with:
             name: TAR
             path: STM32F7_HAL*.tar.gz
