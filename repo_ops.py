@@ -105,7 +105,7 @@ def main():
     parser = argparse.ArgumentParser(description="STM32 HAL CMake repository operations")
     parser.add_argument("--operation", "-o", 
                         help="Operation to perform",
-                        choices=["clean", "start_container", "configure", "build", "test_example_compilation", "test_hal_compilation", "test_connection"],
+                        choices=["clean", "start_container", "configure", "build", "test_example_compilation", "test_hal_compilation", "test_connection", "package"],
                         action="append", nargs="+") #required=True
     parser.add_argument("--build_type", "-bt", choices=["Release", "Debug", "RelWithDebInfo", "MinSizeRel"], help="defines the build type", default="Release")
     parser.add_argument("--container", "-c", help="defines a container for the build operation", default=default_container_name)
@@ -130,11 +130,15 @@ def main():
             start_container(args.container)
         
         if "configure" in args.operation[0]:
-            command = f"cmake -S . -B build/ -DCMAKE_TOOLCHAIN_FILE=/home/developer/toolchain/arm-none-eabi-gcc.cmake -DCMAKE_BUILD_TYPE={args.build_type}"
+            command = f"cmake -S {MOUNT} -B {MOUNT}/build/ -DCMAKE_TOOLCHAIN_FILE=/home/developer/toolchain/arm-none-eabi-gcc.cmake -DCMAKE_BUILD_TYPE={args.build_type}"
             exec_in_container(command)
         
         if "build" in args.operation[0]:
-            command = f"make -C build/"
+            command = f"make -C {MOUNT}/build/"
+            exec_in_container(command)
+        
+        if "package" in args.operation[0]:
+            command = f"cpack --config {MOUNT}/build/CPackConfig.cmake -G TGZ"
             exec_in_container(command)
         
         if "test_hal_compilation" in args.operation[0]:
@@ -147,8 +151,6 @@ def main():
     
     if args.stop == True:
         helper.execute(f"docker stop {args.container}")
-
-
 
 if __name__ == "__main__":
     main()
