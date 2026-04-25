@@ -8,3 +8,4 @@ tty1
 tmp*
 test_results*
 test_build*
+_CPack_Packages

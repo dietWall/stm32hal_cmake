@@ -1,0 +1,53 @@
+name: Test Compilation
+
+on:
+  push:
+  workflow_call:
+
+jobs:  
+    test:
+        runs-on: self-hosted
+        steps:
+        - name: Checkout code
+          uses: actions/checkout@v5
+        
+        - name: setup host environment
+          run: ./repo_config/setup_env.sh
+          env: 
+            TOKEN: ${{ secrets.REPO_HELPER_TOKEN }}
+              
+        - name: Pull Image
+          run: docker pull ghcr.io/dietwall/arm_gcc_image:latest
+
+        - name: Download Container dependencies
+          run: ./repo_config/download_release.sh -r dietwall/openocd-tcl-controller -o repo_config/tmp_download
+          env: 
+            TOKEN: ${{ secrets.TCL_UTILS_TOKEN }}
+
+        - name: create container
+          run: source repo_config/.venv_host/bin/activate && ./repo_ops.py --operation start_container
+        
+        - name: run hal_compilation_test
+          run: source repo_config/.venv_host/bin/activate && ./repo_ops.py --operation test_hal_compilation
+
+        - name: run example_compilation_test
+          run: source repo_config/.venv_host/bin/activate && ./repo_ops.py --operation test_example_compilation
+        
+        - name: Publish Test Results
+          uses: EnricoMi/publish-unit-test-result-action/linux@v2
+          if: (!cancelled())
+          with:
+            files:  |
+                test_results*.xml
+                
+    cleanup:
+        runs-on: self-hosted
+        needs: test
+        if: always() # make sure it runs even if the test job fails or is cancelled
+        steps:
+        - name: cleanup environment
+          run: source repo_config/.venv_host/bin/activate && ./repo_ops.py --operation clean    
+
+
+        
+  

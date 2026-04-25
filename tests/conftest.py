@@ -5,6 +5,7 @@ import datetime
 import time
 
 from tcl_utils.serial_monitor import SerialReaderWriter
+from tcl_utils.tcl_control import OpenOCD_TCL
 from repo_helper import Repo_Helper
 
 
@@ -43,7 +44,7 @@ cmake_build_types = ["Debug", "Release", "RelWithDebInfo", "MinSizeRel"]
 def build_type(request):
     return request.param
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def build_dir(build_type, build_dir_base):
     repo_helper = Repo_Helper.Repo_Helper(logfile=None)
     build_dir = f"{build_dir_base}/{build_type}"
@@ -55,7 +56,7 @@ def build_dir(build_type, build_dir_base):
 def toolchain_file():
     return "/home/developer/toolchain/arm-none-eabi-gcc.cmake"
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def build_logfile(build_dir):
     from repo_helper import Repo_Helper
     repo_helper = Repo_Helper.Repo_Helper(logfile=None)
@@ -105,8 +106,6 @@ def clean_directory(build_dir) -> int:
 
 def log_directory(build_type: str, repo_root):
     log_dir = f"{repo_root}/tests/log/{build_type}"
-    #make sure it exists
-    #subprocess.run([f"mkdir -p {log_dir}"], shell=True)
     helper = Repo_Helper.Repo_Helper(logfile=None)
     _ = helper.execute(f"mkdir -p {log_dir}")
     return log_dir
@@ -114,10 +113,10 @@ def log_directory(build_type: str, repo_root):
 
 @pytest.fixture(scope="module")
 def openocd_controller(firmware, repo_root, host):
-    from tcl_utils.tcl_control import OpenOCD_TCL
+    print(f"Creating OpenOCD controller: {firmware[0]}, {firmware[1]}")
     tcl = OpenOCD_TCL(host=host, 
-                    verbose=False, 
-                    elf_file=firmware[0], 
+                    verbose=True, 
+                    #elf_file=firmware[0], 
                     mapfile=firmware[1], 
                     svd_file=os.path.join(repo_root, "svd", "stm32f767.xml")
     )
@@ -136,6 +135,7 @@ def serial_interface(build_type, repo_root, setup_serial_interface):
     #serial_logfile is communication log
     serial_logfile = f"{log_directory(build_type, repo_root)}/uart_log.txt"
     ser = SerialReaderWriter(logfile=serial_logfile, device=setup_serial_interface)
+    ser.reset_input_buffer()
     yield ser
     return
 
@@ -147,6 +147,9 @@ def setup_serial_interface(serial_file, host="dw-latitude-e6440", port=3002, soc
         socat_logfile is socat specific logfile, not serial log
     '''
     print(f"setup_serial_interface: connecting to host: {host}:{port}")
+    print(f"socat logfile: {socat_logfile}")
+    print(f"serial_file: {serial_file}")
+    
     from repo_helper.Repo_Helper import Repo_Helper
     helper = Repo_Helper()
     
@@ -169,11 +172,31 @@ def setup_serial_interface(serial_file, host="dw-latitude-e6440", port=3002, soc
     yield serial_file
     helper.execute(f"killall socat")
 
+@pytest.fixture(scope="module")
+def configure_hal(build_type, toolchain_file, repo_root, log, build_logfile):
+    build_dir = f"{repo_root}/build/hal/{build_type}"
+    result_code = configure(cmake_root_dir=repo_root, build_dir=build_dir, toolchain_file=toolchain_file, build_type=build_type, log=log, install_prefix=None, build_logfile=build_logfile)
+    assert result_code == 0, f"cmake failed with: {result_code}"
+    return build_dir
+
+@pytest.fixture(scope="module")
+def make_hal(configure_hal, log, build_logfile):
+    result_code = make(configure_hal, build_logfile, log)
+    assert result_code == 0, f"make failed with: {result_code}"
+    return configure_hal
+
+@pytest.fixture(scope="module")
+def install_hal(make_hal, log, build_logfile):
+    result_code = make_install(make_hal, build_logfile, log)
+    assert result_code == 0, f"make install failed with: {result_code}"
+    return make_hal
+
 
 @pytest.fixture(scope="module")
 def compile_install_hal(self, toolchain_file, repo_root, build_type):
     from conftest import configure, make, make_install
-    build_dir = f"{repo_root}/build/{build_type}"
+    build_dir = f"{repo_root}/build/hal/{build_type}"
+    print(f"building and installing hal in {build_dir}")
     result_code = configure(
         cmake_root_dir=repo_root, 
         build_dir=build_dir, 
